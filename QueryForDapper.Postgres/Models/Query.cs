@@ -84,6 +84,16 @@ namespace QueryForDapper.Postgres.Models
             _joins.Add(new Join(column, table.ToTableName(), joinType));
         }
 
+        public void AddJoin(string column, Type table, string columnLeft, Type tableLeft, JoinType joinType)
+        {
+            _joins.Add(new Join(column, table.ToTableName(), columnLeft, tableLeft.ToTableName(), joinType));
+        }
+
+        public void AddJoin(MemberInfo column, Type table, MemberInfo columnLeft, Type tableLeft, JoinType joinType)
+        {
+            _joins.Add(new Join(column.ToColumnName(), table.ToTableName(), columnLeft.ToColumnName(), tableLeft.ToTableName(), joinType));
+        }
+
         public void AddSelect(MemberInfo column, Type table)
         {
             _selects.Add(new Select(column.ToColumnName(), table.ToTableName()));
@@ -99,5 +109,6 @@ namespace QueryForDapper.Postgres.Models
                                   @operator, 
                                   predicate));
         }
+
     }
 }

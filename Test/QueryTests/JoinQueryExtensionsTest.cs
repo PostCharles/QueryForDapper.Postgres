@@ -38,24 +38,45 @@ namespace Test.QueryTests
         public void JoinOnViaString_PassesValuesToAddJoin()
         {
             var column = "column";
-            var joinType = JoinType.INNER;
+            var joinType = JoinType.inner;
 
-            Query.JoinOn<UsingType>(column, joinType);
+            Query.JoinOn<Table>(column, joinType);
 
 
-            _mock.Verify(m => m.AddJoin(column, typeof(UsingType), joinType));
+            _mock.Verify(m => m.AddJoin(column, typeof(Table), joinType));
         }
 
         [Fact]
         public void JoinOnViaExpression_PassesValuesToAddJoin()
         {
-            var table = typeof(UsingType);
-            var member = ((Expression<Func<UsingType, object>>)((UsingType u) => u.Declared)).GetMemberInfo();
-            var join = JoinType.LEFT_OUTER;
+            var table = typeof(Table);
+            var member = ((Expression<Func<Table, object>>)((Table u) => u.TableId)).GetMemberInfo();
+            var join = JoinType.LeftOuter;
             
-            Query.JoinOn<UsingType>(u => u.Declared, join);
+            Query.JoinOn<Table>(u => u.TableId, join);
 
             _mock.Verify(m => m.AddJoin(member, table, join));
+        }
+
+        [Fact]
+        public void JoinOnLeftRightViaString_PassesValuesToAddJoin()
+        {
+            var left = "Left";
+            var right = "Right";
+            Query.JoinOn<Left, Right>(left, right);
+
+            _mock.Verify(m => m.AddJoin(right, typeof(Right), left, typeof(Left), JoinType.inner));
+        }
+
+        [Fact]
+        public void JoinOnLeftRightViaExpression_PassesValuesToAddJoin()
+        {
+            var left = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var right = typeof(Right).GetProperty(nameof(Right.RightId));
+
+            Query.JoinOn<Left, Right>(l => l.LeftId, r => r.RightId);
+
+            _mock.Verify(m => m.AddJoin(right, typeof(Right), left, typeof(Left), JoinType.inner));
         }
 
         [Fact]
@@ -76,8 +97,8 @@ namespace Test.QueryTests
 
             var joinMap = QueryConfiguration.Current.JoinMaps.Single();
 
-            _mock.Verify(m => m.AddJoin(joinMap.LeftKey, joinMap.JoinTable, JoinType.INNER));
-            _mock.Verify(m => m.AddJoin(joinMap.RightKey, joinMap.RightTable, JoinType.INNER));
+            _mock.Verify(m => m.AddJoin(joinMap.LeftKey, joinMap.JoinTable, JoinType.inner));
+            _mock.Verify(m => m.AddJoin(joinMap.RightKey, joinMap.RightTable, JoinType.inner));
         }
     }
 }

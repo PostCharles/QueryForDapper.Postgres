@@ -34,11 +34,11 @@ namespace Test.QueryTests
         [Fact]
         public void OrderBy_PassesValueToAddOrderBy()
         {
-            var member = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var member = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.OrderBy<Left>(l => l.LeftId);
+            Query.OrderBy<Table>(l => l.TableId);
 
-            _mock.Verify(m => m.AddOrderBy(member, typeof(Left), Order.ASC));
+            _mock.Verify(m => m.AddOrderBy(member, typeof(Table), Order.ASC));
         }
     }
 }

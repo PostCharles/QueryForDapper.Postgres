@@ -37,63 +37,63 @@ namespace Test.QueryTests
         public void WhereComparedWith_CreatesPredicateWithParameter()
         {
             var parameter = "";
-            var column = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereComparedWith<Left>(l => l.LeftId, () => parameter, comparison: Comparison.NotEqual);
+            Query.WhereComparedWith<Table>(t => t.TableId, () => parameter, comparison: Comparison.NotEqual);
 
             var expectedPredicate = $"<> @{nameof(parameter)}";
-            _mock.Verify(m => m.AddWhere(column, typeof(Left), expectedPredicate, Operator.NONE));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
         }
 
         [Fact]
         public void WhereCompared_CreatesPredicateWithValueAsLiteral()
         {
             var value = "CompareValue";
-            var column = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereCompared<Left>(l => l.LeftId, value, comparison: Comparison.GreaterThanEqual);
+            Query.WhereCompared<Table>(t => t.TableId, value, comparison: Comparison.GreaterThanEqual);
 
             var expectedPredicate = $">= '{value}'";
-            _mock.Verify(m => m.AddWhere(column, typeof(Left), expectedPredicate, Operator.NONE));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
         }
 
         [Fact]
         public void WhereAnyWith_BuildsPredicateAndPassesValues()
         {
             var testParam = "";
-            var column = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereAnyWith<Left>(l => l.LeftId, () => testParam, Operator.NONE);
+            Query.WhereAnyWith<Table>(t => t.TableId, () => testParam, Operator.None);
             
             var expectedPredicate = $"= ANY( @{nameof(testParam)} )";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Left), expectedPredicate, Operator.NONE));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
         }
 
         [Fact]
         public void WhereLike_InjectsValueIntoPredicate()
         {
             var likeTerm = "TestTerm";
-            var column = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereLike<Left>(l => l.LeftId, likeTerm);
+            Query.WhereLike<Table>(t => t.TableId, likeTerm);
             
             var expectedPredicate = $"ILIKE '%' || '{likeTerm}' || '%'";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Left), expectedPredicate, Operator.NONE));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
         }
 
         [Fact]
         public void WhereLikeWith_InjectsParameterIntoPredicate()
         {
             var parameter = "";
-            var column = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereLikeWith<Left>(l => l.LeftId, () => parameter, like: Like.Begins, @case: Case.Sensitive);
+            Query.WhereLikeWith<Table>(t => t.TableId, () => parameter, like: Like.Begins, @case: Case.Sensitive);
             
             var expectedPredicate = $"LIKE @{nameof(parameter)} || '%'";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Left), expectedPredicate, Operator.NONE));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
         }
 
         [Fact]
@@ -103,13 +103,13 @@ namespace Test.QueryTests
 
             var subQuery = QueryForDapper.Postgres.Models.
                            Query.FromTable<Right>().Select<Right>(r => r.RightId);
-            var column = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereInSubQuery<Left>(l => l.LeftId, subQuery);
+            Query.WhereInSubQuery<Table>(t => t.TableId, subQuery);
 
             var expectedPredicate = $"IN ({subQuery.ToStatement()})";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Left), expectedPredicate, Operator.NONE));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
         }
 
     }

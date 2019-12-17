@@ -31,7 +31,13 @@ namespace QueryForDapper.Postgres.Extensions
 
         public static string ToTableName(this Type table)
         {
+            if (QueryConfiguration.Current.TableDefinitions.TryGetValue(table, out var tableName)) return tableName;
+
+            var attribute = (QueryConfiguration.Current.ShouldUseTableAttributes) ? table.GetCustomAttribute(typeof(TableAttribute)) : null;
+            if (attribute != null) return ((TableAttribute)attribute).Name;
+
             return QueryConfiguration.Current.TableNameMethod(table.Name);
+
         }
         public static string ToTableName(this string table)
         {

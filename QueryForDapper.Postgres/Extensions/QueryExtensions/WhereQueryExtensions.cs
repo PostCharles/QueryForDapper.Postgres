@@ -16,60 +16,60 @@ namespace QueryForDapper.Postgres.Models
         
         public const string ANY = "ANY";
 
-        public static IQuery WhereCompared<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, string value,
+        public static IQuery WhereCompared<T>(this IQuery query, Expression<Func<T, object>> propertySelector, string value,
                                               Operator @operator = default, Comparison comparison = default)
         {
-            WhereComparedInternal<T>(query, fieldSelector, $"'{value}'", @operator, comparison);
+            WhereComparedInternal<T>(query, propertySelector, $"'{value}'", @operator, comparison);
 
             return query;
         }
 
-        public static IQuery WhereComparedWith<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, Expression<Func<object>> parameterSelector,
+        public static IQuery WhereComparedWith<T>(this IQuery query, Expression<Func<T, object>> propertySelector, Expression<Func<object>> parameterSelector,
                                                   Operator @operator = default, Comparison comparison = default)
         {
             var parameter = $"@{parameterSelector.Body.GetMemberInfo().Name}";
-            WhereComparedInternal<T>(query, fieldSelector, parameter, @operator, comparison);
+            WhereComparedInternal<T>(query, propertySelector, parameter, @operator, comparison);
 
             return query;
         }
 
-        private static void WhereComparedInternal<T>(IQuery query, Expression<Func<T, object>> fieldSelector, string value, 
+        private static void WhereComparedInternal<T>(IQuery query, Expression<Func<T, object>> propertySelector, string value, 
                                                      Operator @operator, Comparison comparison)
         {
-            var column = fieldSelector.Body.GetMemberInfo();
+            var column = propertySelector.Body.GetMemberInfo();
             query.AddWhere(column, typeof(T), $"{comparison.GetSql()} {value}", @operator);
         }
 
 
-        public static IQuery WhereLike<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, string value, 
+        public static IQuery WhereLike<T>(this IQuery query, Expression<Func<T, object>> propertySelector, string value, 
                                           Operator @operator = default, Case likeCase = default, Like like = default)
         {
-            WhereLikeInternal(query, fieldSelector, $"'{value}'", @operator, like, likeCase);
+            WhereLikeInternal(query, propertySelector, $"'{value}'", @operator, like, likeCase);
             
             return query;
         }
 
-        public static IQuery WhereLikeWith<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, Expression<Func<object>> parameterSelector,
+        public static IQuery WhereLikeWith<T>(this IQuery query, Expression<Func<T, object>> propertySelector, Expression<Func<object>> parameterSelector,
                                               Operator @operator = default, Like like = default, Case @case = default)
         {
             var parameter = parameterSelector.Body.GetDapperParameter();
-            WhereLikeInternal(query, fieldSelector, parameter, @operator, like, @case);
+            WhereLikeInternal(query, propertySelector, parameter, @operator, like, @case);
 
             return query;
         }
 
-        private static void WhereLikeInternal<T>( IQuery query, Expression<Func<T, object>> fieldSelector, string likeValue, Operator @operator, Like like, Case @case)
+        private static void WhereLikeInternal<T>( IQuery query, Expression<Func<T, object>> propertySelector, string likeValue, Operator @operator, Like like, Case @case)
         {
-            var column = fieldSelector.Body.GetMemberInfo();
+            var column = propertySelector.Body.GetMemberInfo();
             var predicate = $"{@case.GetSql()} {String.Format(like.GetSql(), likeValue)}";
 
             query.AddWhere(column, typeof(T), predicate, @operator);
         }
 
-        public static IQuery WhereAnyWith<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, Expression<Func<object>> parameterSelector, Operator @operator = default)
+        public static IQuery WhereAnyWith<T>(this IQuery query, Expression<Func<T, object>> propertySelector, Expression<Func<object>> parameterSelector, Operator @operator = default)
         {
             var dapperParameter = parameterSelector.Body.GetDapperParameter();
-            var column = fieldSelector.Body.GetMemberInfo();
+            var column = propertySelector.Body.GetMemberInfo();
 
             var predicate = $"= {ANY}( {dapperParameter} )";
             query.AddWhere(column, typeof(T), predicate, @operator);
@@ -77,9 +77,9 @@ namespace QueryForDapper.Postgres.Models
             return query;
         }
 
-        public static IQuery WhereInSubQuery<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, IQuery subQuery, Operator @operator = default )
+        public static IQuery WhereInSubQuery<T>(this IQuery query, Expression<Func<T, object>> propertySelector, IQuery subQuery, Operator @operator = default )
         {
-            query.AddWhere(fieldSelector.GetMemberInfo(), typeof(T), $"IN ({subQuery.ToStatement()})", @operator);
+            query.AddWhere(propertySelector.GetMemberInfo(), typeof(T), $"IN ({subQuery.ToStatement()})", @operator);
 
             return query;
         } 

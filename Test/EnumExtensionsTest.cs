@@ -15,10 +15,10 @@ namespace Test
     public class EnumExtensionsTest
     {
         [Theory]
-        [InlineData(Operator.NONE, "")]
-        [InlineData(Operator.NOT, "NOT")]
+        [InlineData(Operator.None, "")]
+        [InlineData(Operator.Not, "NOT")]
         [InlineData(Case.Sensitive, "LIKE")]
-        [InlineData(JoinType.FULL_OUTER, "FULL OUTER")]
+        [InlineData(JoinType.FullOuter, "FULL OUTER")]
         [InlineData(Like.Anywhere, "'%' || {0} || '%'")]
         public void GetSql_EnumValueHasSqlPartialAttribute_ReturnsSqlValue(Enum @enum, string expectedValue)
         {

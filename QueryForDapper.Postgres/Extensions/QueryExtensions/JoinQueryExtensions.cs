@@ -19,9 +19,24 @@ namespace QueryForDapper.Postgres.Models
 
             return query;
         }
-        public static IQuery JoinOn<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, JoinType joinType = default)
+        public static IQuery JoinOn<T>(this IQuery query, Expression<Func<T, object>> propertySelector, JoinType joinType = default)
         {
-            query.AddJoin(fieldSelector.Body.GetMemberInfo(), typeof(T), joinType);
+            query.AddJoin(propertySelector.Body.GetMemberInfo(), typeof(T), joinType);
+
+            return query;
+        }
+
+        public static IQuery JoinOn<TLeft, TRight>(this IQuery query, string columnLeft, string columnRight, JoinType joinType = default)
+        {
+            query.AddJoin(columnRight, typeof(TRight), columnLeft, typeof(TLeft), joinType);
+
+            return query;
+        }
+
+        public static IQuery JoinOn<TLeft, TRight>(this IQuery query, Expression<Func<TLeft, object>> leftSelector, 
+                                                   Expression<Func<TRight, object>> rightSelector, JoinType joinType = default)
+        {
+            query.AddJoin(rightSelector.GetMemberInfo(), typeof(TRight), leftSelector.GetMemberInfo(), typeof(TLeft), joinType);
 
             return query;
         }
@@ -32,8 +47,8 @@ namespace QueryForDapper.Postgres.Models
 
             if (joinMap is null) throw new JoinMapNotFound(typeof(TLeft), typeof(TRight));
 
-            query.AddJoin(joinMap.LeftKey, joinMap.JoinTable, JoinType.INNER);
-            query.AddJoin(joinMap.RightKey, joinMap.RightTable, JoinType.INNER);
+            query.AddJoin(joinMap.LeftKey, joinMap.JoinTable, JoinType.inner);
+            query.AddJoin(joinMap.RightKey, joinMap.RightTable, JoinType.inner);
 
             return query;
         }

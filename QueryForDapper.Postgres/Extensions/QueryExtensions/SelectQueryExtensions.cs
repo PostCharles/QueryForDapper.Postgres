@@ -36,18 +36,18 @@ namespace QueryForDapper.Postgres.Models
             return query;
         }
 
-        public static IQuery Select<T>(this IQuery query, Expression<Func<T, object>> fieldSelector)
+        public static IQuery Select<T>(this IQuery query, Expression<Func<T, object>> propertySelector)
         {
-            query.AddSelect(fieldSelector.Body.GetMemberInfo(), typeof(T));
+            query.AddSelect(propertySelector.Body.GetMemberInfo(), typeof(T));
 
             return query;
         }
 
-        public static IQuery Select<T>(this IQuery query, params Expression<Func<T, object>>[] fieldSelectors)
+        public static IQuery Select<T>(this IQuery query, params Expression<Func<T, object>>[] propertySelectors)
         {
-            foreach (var fieldSelector in fieldSelectors)
+            foreach (var propertySelector in propertySelectors)
             {
-                query.AddSelect(fieldSelector.Body.GetMemberInfo(), typeof(T));
+                query.AddSelect(propertySelector.Body.GetMemberInfo(), typeof(T));
             }
 
             return query;

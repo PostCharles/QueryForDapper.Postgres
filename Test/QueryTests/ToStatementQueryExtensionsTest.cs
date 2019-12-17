@@ -79,15 +79,39 @@ namespace Test.QueryTests
         }
 
         [Fact]
+        public void AppendJoin_JoinIsUsing_AppendsJoinWithUsingStatement()
+        {
+            _query.JoinOn<Table>(t => t.TableId);
+
+            Assert.True(_query.Joins.Single().IsUsing);
+
+            Assert.Equal($"{BASE_STATEMENT} INNER JOIN {nameof(Table)} USING ({nameof(Table.TableId)})",
+                         AppendJoins(_query, BASE_STATEMENT));
+        }
+
+        [Fact]
+        public void AppendJoin_JoinNotUsing_AppendsJoinWithOnStatement()
+        {
+            _query.JoinOn<Join, Right>(j => j.RightId, r => r.RightId);
+
+            Assert.False(_query.Joins.Single().IsUsing);
+
+            Assert.Equal($"{BASE_STATEMENT} INNER JOIN {nameof(Right)} ON {nameof(Join)}.{nameof(Join.RightId)} = {nameof(Right)}.{nameof(Right.RightId)}",
+                         AppendJoins(_query, BASE_STATEMENT));
+        }
+
+        [Fact]
         public void AppendJoins_QueryHasJoins_ReturnsStatementWithAppenedJoins()
         {
             
             _query.JoinOn<Join>(j => j.LeftId)
-                 .JoinOn<Right>(r => r.RightId, JoinType.RIGHT_OUTER);
+                 .JoinOn<Right>(r => r.RightId, JoinType.RightOuter);
 
             Assert.Equal($"{BASE_STATEMENT} INNER JOIN {nameof(Join)} USING ({nameof(Join.LeftId)}) RIGHT OUTER JOIN {nameof(Right)} USING ({nameof(Right.RightId)})",
                          AppendJoins(_query, BASE_STATEMENT));
         }
+
+
 
         [Fact]
         public void AppendWheres_QueryHasNoWheres_ReturnsUnaliteredStatement()
@@ -103,8 +127,8 @@ namespace Test.QueryTests
             var subQuery = Query.FromTable<Right>().Select<Right>(r => r.RightId);
 
             _query.WhereAnyWith<Left>(l => l.LeftId, () => parameter)
-                 .WhereLike<Join>(j => j.JoinId, term, Operator.AND)
-                 .WhereInSubQuery<Right>(r => r.RightId, subQuery, Operator.NOT);
+                 .WhereLike<Join>(j => j.JoinId, term, Operator.And)
+                 .WhereInSubQuery<Right>(r => r.RightId, subQuery, Operator.Not);
 
             Assert.Equal($"{BASE_STATEMENT} WHERE {nameof(Left)}.{nameof(Left.LeftId)} = ANY( @{nameof(parameter)} ) " +
                          $"AND {nameof(Join)}.{nameof(Join.JoinId)} ILIKE '%' || '{term}' || '%' " +

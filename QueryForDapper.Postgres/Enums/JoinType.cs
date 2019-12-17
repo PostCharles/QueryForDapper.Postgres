@@ -10,13 +10,13 @@ namespace QueryForDapper.Postgres.Enums
     public enum JoinType
     {
         [SqlPartial("INNER")]
-        INNER = 0,
+        inner = 0,
         [SqlPartial("LEFT OUTER")]
-        LEFT_OUTER,
+        LeftOuter,
         [SqlPartial("RIGHT OUTER")]
-        RIGHT_OUTER,
+        RightOuter,
         [SqlPartial("FULL OUTER")]
-        FULL_OUTER
+        FullOuter
 
     }
 }

@@ -27,14 +27,19 @@ namespace QueryForDapper.Postgres.Models
             set => _tableNameMethod = (_tableNameMethod == null) ? value : throw new NameMethodSetException(nameof(TableNameMethod));
         }
 
-        public ICollection<ColumnDefinition> ColumnDefinitions = new List<ColumnDefinition>();
-        public ICollection<JoinMap> JoinMaps { get; } = new List<JoinMap>();
+        public ICollection<ColumnDefinition> ColumnDefinitions { get; }
+        public IDictionary<Type, string> TableDefinitions { get; }
+        public ICollection<JoinMap> JoinMaps { get; }
 
-        public bool ShouldUseColumnAttributes { get; set; } = false;
+        public bool ShouldUseColumnAttributes { get; set; }
+        public bool ShouldUseTableAttributes { get; set; }
 
 
         private QueryConfiguration()
         {
+            ColumnDefinitions = new List<ColumnDefinition>();
+            TableDefinitions = new Dictionary<Type, String>();
+            JoinMaps = new List<JoinMap>();
         }
 
         private static void Reset() => _lazy = new Lazy<QueryConfiguration>(() => new QueryConfiguration());

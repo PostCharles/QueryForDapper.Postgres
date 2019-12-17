@@ -99,6 +99,40 @@ namespace Test
         }
 
         [Fact]
+        public void ToTableNameViaType_HasTableDefinition_ReturnsValueFromDefinition()
+        {
+            var definedTable = "TableName";
+            QueryConfiguration.Current.DefineTableName<UsingType>(definedTable);
+
+            var result = typeof(UsingType).ToTableName();
+            
+            Assert.Empty(PassedTableNames);
+            Assert.Equal(definedTable, result);
+        }
+
+        [Fact]
+        public void ToTableNameViaType_HasTableAttribute_ReturnsNameFromAttribute()
+        {
+            QueryConfiguration.Current.ShouldUseTableAttributes = true;
+
+            var result = typeof(AttributedType).ToTableName();
+
+            Assert.Equal(AttributedType.TABLE_ATTRIBUTE_VALUE, result);
+        }
+
+        [Fact]
+        public void ToTableNameViaType_HasTableAttributeAndTableDefinition_ReturnsNameFromDefinition()
+        {
+            var definedTable = "defined_table_name";
+            QueryConfiguration.Current.DefineTableName<AttributedType>(definedTable);
+
+
+            var result = typeof(AttributedType).ToTableName();
+
+            Assert.Equal(definedTable, result);
+        }
+
+        [Fact]
         public void ToTableNameViaString_PassesValueToTableNameMethod()
         {
             var tableName = typeof(Left).Name;

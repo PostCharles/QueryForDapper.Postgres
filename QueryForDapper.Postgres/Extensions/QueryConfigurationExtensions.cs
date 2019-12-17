@@ -1,5 +1,6 @@
 ﻿using QueryForDapper.Postgres.Exceptions;
 using QueryForDapper.Postgres.Extensions;
+using QueryForDapper.Postgres.Interfaces;
 using QueryForDapper.Postgres.NamingSchemes;
 using System;
 using System.Linq.Expressions;
@@ -44,9 +45,23 @@ namespace QueryForDapper.Postgres.Models
             return config;
         }
 
+        public static QueryConfiguration UseCustomNamingScheme(this QueryConfiguration config, INamingScheme scheme)
+        {
+            config.AssignNameMethodsFromScheme(scheme);
+
+            return config;
+        }
+
         public static QueryConfiguration UseColumnAttributeNames(this QueryConfiguration config)
         {
             config.ShouldUseColumnAttributes = true;
+
+            return config;
+        }
+
+        public static QueryConfiguration UseTableAttributeNames(this QueryConfiguration config)
+        {
+            config.ShouldUseTableAttributes = true;
 
             return config;
         }
@@ -87,6 +102,7 @@ namespace QueryForDapper.Postgres.Models
                                                                                   columnName));
             return config;
         }
+
         public static QueryConfiguration DefineColumnUsingColumnNaming<T>(this QueryConfiguration config, Expression<Func<T, object>> columnSelector, string columnName)
         {
             try
@@ -97,6 +113,27 @@ namespace QueryForDapper.Postgres.Models
             catch (NameMethodNotSetException ex)
             {
                 throw new ConfigurationOrderException(nameof(DefineColumnUsingColumnNaming), ex);
+            }
+            return config;
+        }
+
+        public static QueryConfiguration DefineTableName<T>(this QueryConfiguration config, string tableName)
+        {
+            QueryConfiguration.Current.TableDefinitions.Add(typeof(T), tableName);
+
+            return config;
+        }
+
+        public static QueryConfiguration DefineTableUsingTableNaming<T>(this QueryConfiguration config, string tableName)
+        {
+            try
+            {
+                DefineTableName<T>(config, tableName.ToTableName());
+
+            }
+            catch (NameMethodNotSetException ex)
+            {
+                throw new ConfigurationOrderException(nameof(DefineTableUsingTableNaming), ex);
             }
             return config;
         }

@@ -1,4 +1,5 @@
 ﻿using QueryForDapper.Postgres.Enums;
+using QueryForDapper.Postgres.Extensions;
 using QueryForDapper.Postgres.Models.Keywords;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace Test.KeywordTests
         [Fact]
         public void Constructor_OperatorIsNone_SetsOperatorToEmptyString()
         {
-            var sut = new Where("", "", Operator.NONE, "");
+            var sut = new Where("", "", Operator.None, "");
 
             Assert.Empty(sut.Operator);
         }
@@ -23,10 +24,10 @@ namespace Test.KeywordTests
         [Fact]
         public void Constructor_OperatorIsNotNone_SetsOperatorToStringOfValue()
         {
-            var op = Operator.AND;
+            var op = Operator.And;
             var sut = new Where("", "", op, "");
 
-            Assert.Equal(op.ToString(), sut.Operator);
+            Assert.Equal(op.GetSql(), sut.Operator);
         }
     }
 }

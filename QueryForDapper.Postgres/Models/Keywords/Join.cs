@@ -14,12 +14,28 @@ namespace QueryForDapper.Postgres.Models.Keywords
         public string Column { get; }
         public string Table { get; }
         public string JoinType { get; }
+        public bool IsUsing { get; }
+        public string LeftColumn { get; set; }
+        public string LeftTable { get; set; }
 
         public Join(string column, string table, JoinType joinType)
         {
             Column = column;
             Table = table;
-            
+
+            IsUsing = true;
+
+            JoinType = joinType.GetSql();
+        }
+
+        public Join(string column, string table, string leftColumn, string leftTable, JoinType joinType)
+        {
+            Column = column;
+            Table = table;
+            LeftColumn = leftColumn;
+            LeftTable = leftTable;
+
+            IsUsing = false;
             JoinType = joinType.GetSql();
         }
 

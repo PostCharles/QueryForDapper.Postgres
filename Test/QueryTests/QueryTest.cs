@@ -1,4 +1,5 @@
 ﻿using QueryForDapper.Postgres.Enums;
+using QueryForDapper.Postgres.Extensions;
 using QueryForDapper.Postgres.Models;
 using System;
 using System.Collections.Generic;
@@ -18,15 +19,23 @@ namespace Test.QueryTests
 
         public List<string> PassedColumnNames { get;}
         public List<string> PassedTableNames { get;}
-        
-        public (MemberInfo Column, Type Table) TestTable { get; }
+
+        public Type Table { get; } = typeof(Right);
+        public MemberInfo Column { get; } = typeof(Right).GetProperty(nameof(Right.RightId));
+        public Type LeftTable { get; } = typeof(Left);
+        public MemberInfo LeftColumn { get; } = typeof(Left).GetProperty(nameof(Left.LeftId));
+
+
 
         public QueryTest()
         {
             PassedColumnNames = new List<string>();
             PassedTableNames = new List<string>();
-            TestTable = (typeof(Left).GetProperty(nameof(Left.LeftId)),
-                         typeof(Left));
+            
+
+            Column = Table.GetProperty(nameof(Right.RightId));
+            LeftTable = typeof(Left);
+            LeftColumn = LeftTable.GetProperty(nameof(Left.LeftId));
 
             Query.ConfigureTo().NameColumnsWith(c => { PassedColumnNames.Add(c); return c; })
                                .NameTablesWith(t => { PassedTableNames.Add(t); return t; });
@@ -38,8 +47,8 @@ namespace Test.QueryTests
         [Fact]
         public void Constructor_StartTableStringPassedToTableNameMethod()
         {
-            Query.FromTable<Left>();
-            Assert.NotNull(PassedTableNames.Single(t => t == nameof(Left)));
+            Query.FromTable<Table>();
+            Assert.NotNull(PassedTableNames.Single(t => t == nameof(Table)));
         }
 
 
@@ -47,8 +56,8 @@ namespace Test.QueryTests
         [Fact]
         public void FromTable_ReturnsInstanceWithGenericSetToStartTable()
         {
-            var sut = Query.FromTable<Left>();
-            Assert.Equal(nameof(Left), sut.StartTable);
+            var sut = Query.FromTable<Table>();
+            Assert.Equal(nameof(Table), sut.StartTable);
         }
 
         [Fact]
@@ -76,91 +85,143 @@ namespace Test.QueryTests
         {
             var order = Order.ASC;
 
-            _sut.AddOrderBy(TestTable.Column, TestTable.Table, order);
+            _sut.AddOrderBy(Column, Table, order);
 
             var orderBy = _sut.OrderBys.Single();
             
-            Assert.Equal(TestTable.Column.Name, orderBy.Column);
-            Assert.Equal(TestTable.Table.Name, orderBy.Table);
+            Assert.Equal(Column.Name, orderBy.Column);
+            Assert.Equal(Table.Name, orderBy.Table);
             Assert.Equal(order.ToString(), orderBy.Order);
         }
 
         [Fact]
         public void AddOrderBy_PassesTableAndColumnToNameMethods()
         {
-            _sut.AddOrderBy(TestTable.Column, TestTable.Table, Order.ASC);
+            _sut.AddOrderBy(Column, Table, Order.ASC);
 
-            Assert.Single(PassedTableNames.Where(t => t == TestTable.Table.Name));
-            Assert.Single(PassedColumnNames.Where(t => t == TestTable.Column.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
+            Assert.Single(PassedColumnNames.Where(t => t == Column.Name));
         }
 
         [Fact]
         public void AddJoin_AddsJoinToJoins()
         {
-            var joinType = JoinType.INNER;
+            var joinType = JoinType.inner;
 
-            _sut.AddJoin(TestTable.Column, TestTable.Table, joinType);
+            _sut.AddJoin(Column, Table, joinType);
 
             var join = _sut.Joins.Single();
 
-            Assert.Equal(TestTable.Column.Name, join.Column);
-            Assert.Equal(TestTable.Table.Name, join.Table);
-            Assert.Equal(joinType.ToString(), join.JoinType);
+            Assert.Equal(Column.Name, join.Column);
+            Assert.Equal(Table.Name, join.Table);
+            Assert.Equal(joinType.GetSql(), join.JoinType);
         }
 
         [Fact]
         public void AddJoin_PassesTableAndColumnToNameMethods()
         {
-            _sut.AddJoin(TestTable.Column, TestTable.Table, JoinType.INNER);
+            _sut.AddJoin(Column, Table, JoinType.inner);
 
-            Assert.Single(PassedTableNames.Where(t => t == TestTable.Table.Name));
-            Assert.Single(PassedColumnNames.Where(t => t == TestTable.Column.Name));
+            Assert.Single(PassedColumnNames.Where(c => c == Column.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
         }
 
         [Fact]
         public void AddJoinWithStringColumn_AddsJoinToJoins()
         {
-            var joinType = JoinType.INNER;
-            var column = "column";
+            var joinType = JoinType.inner;
 
-            _sut.AddJoin(column, TestTable.Table, joinType);
+            _sut.AddJoin(Column.Name, Table, joinType);
 
             var join = _sut.Joins.Single();
 
-            Assert.Equal(column, join.Column);
-            Assert.Equal(TestTable.Table.Name, join.Table);
-            Assert.Equal(joinType.ToString(), join.JoinType);
+            Assert.Equal(Column.Name, join.Column);
+            Assert.Equal(Table.Name, join.Table);
+            Assert.Equal(joinType.GetSql(), join.JoinType);
+        }
+
+
+        [Fact]
+        public void AddJoinLeftAndRightWithStringColumns_PassesTablesToNameMethods()
+        {
+            _sut.AddJoin(Column.Name, Table, LeftColumn.Name, LeftTable, JoinType.inner);
+
+            Assert.Empty(PassedColumnNames.Where(c => c == Column.Name || c == LeftColumn.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
+            Assert.Single(PassedTableNames.Where(t => t == LeftTable.Name));
+        }
+
+        [Fact]
+        public void AddJoinLeftAndRight_AddsJoinToJoins()
+        {
+            var joinType = JoinType.inner;
+
+            _sut.AddJoin(Column, Table, LeftColumn, LeftTable, joinType);
+
+            var join = _sut.Joins.Single();
+
+            Assert.Equal(Column.Name, join.Column);
+            Assert.Equal(Table.Name, join.Table);
+            Assert.Equal(LeftColumn.Name, join.LeftColumn);
+            Assert.Equal(LeftTable.Name, join.LeftTable);
+            Assert.Equal(joinType.GetSql(), join.JoinType);
+        }
+
+        [Fact]
+        public void AddJoinLeftAndRight_PassesTablesAndColumnsToNameMethods()
+        {
+            _sut.AddJoin(Column, Table, LeftColumn, LeftTable, JoinType.inner);
+
+            Assert.Single(PassedColumnNames.Where(c => c == Column.Name));
+            Assert.Single(PassedColumnNames.Where(c => c == LeftColumn.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
+            Assert.Single(PassedTableNames.Where(t => t == LeftTable.Name));
         }
 
         [Fact]
         public void AddJoinWithStringColumn_PassesTableToNameMethods()
         {
-            var column = "column";
-            _sut.AddJoin(column, TestTable.Table, JoinType.INNER);
+            _sut.AddJoin(Column.Name, Table, JoinType.inner);
 
-            Assert.Empty(PassedColumnNames.Where(t => t == column));
-            Assert.Single(PassedTableNames.Where(t => t == TestTable.Table.Name));
+            Assert.Empty(PassedColumnNames.Where(c => c == Column.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
+        }
+
+        [Fact]
+        public void AddJoinLeftAndRightWithStringColumns_AddsJoinToJoins()
+        {
+            var joinType = JoinType.inner;
+
+            _sut.AddJoin(Column.Name, Table, LeftColumn.Name, LeftTable, joinType);
+
+            var join = _sut.Joins.Single();
+
+            Assert.Equal(Column.Name, join.Column);
+            Assert.Equal(Table.Name, join.Table);
+            Assert.Equal(LeftColumn.Name, join.LeftColumn);
+            Assert.Equal(LeftTable.Name, join.LeftTable);
+            Assert.Equal(joinType.GetSql(), join.JoinType);
         }
 
         [Fact]
         public void AddSelect_AddsSelectToSelects()
         {
 
-            _sut.AddSelect(TestTable.Column, TestTable.Table);
+            _sut.AddSelect(Column, Table);
 
             var select = _sut.Selects.Single();
 
-            Assert.Equal(TestTable.Column.Name, select.Column);
-            Assert.Equal(TestTable.Table.Name, select.Table);
+            Assert.Equal(Column.Name, select.Column);
+            Assert.Equal(Table.Name, select.Table);
         }
 
         [Fact]
         public void AddSelect_PassesTableAndColumnToNameMethods()
         {
-            _sut.AddSelect(TestTable.Column, TestTable.Table);
+            _sut.AddSelect(Column, Table);
 
-            Assert.Single(PassedTableNames.Where(t => t == TestTable.Table.Name));
-            Assert.Single(PassedColumnNames.Where(t => t == TestTable.Column.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
+            Assert.Single(PassedColumnNames.Where(t => t == Column.Name));
         }
 
         [Fact]
@@ -168,12 +229,12 @@ namespace Test.QueryTests
         {
             var column = "column";
 
-            _sut.AddSelect(column, TestTable.Table);
+            _sut.AddSelect(column, Table);
 
             var select = _sut.Selects.Single();
 
             Assert.Equal(column, select.Column);
-            Assert.Equal(TestTable.Table.Name, select.Table);
+            Assert.Equal(Table.Name, select.Table);
         }
 
         [Fact]
@@ -181,35 +242,35 @@ namespace Test.QueryTests
         {
             var column = "column";
 
-            _sut.AddSelect(column, TestTable.Table);
+            _sut.AddSelect(column, Table);
 
             Assert.Empty(PassedColumnNames.Where(t => t == column));
-            Assert.Single(PassedTableNames.Where(t => t == TestTable.Table.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
         }
 
         [Fact]
         public void AddWhere_AddsWhereToWheres()
         {
-            var op = Operator.AND;
+            var op = Operator.And;
             var predicate = "predicate";
 
-            _sut.AddWhere(TestTable.Column, TestTable.Table, predicate, op);
+            _sut.AddWhere(Column, Table, predicate, op);
 
             var where = _sut.Wheres.Single();
 
-            Assert.Equal(TestTable.Column.Name, where.Column);
-            Assert.Equal(TestTable.Table.Name, where.Table);
-            Assert.Equal(op.ToString(), where.Operator);
+            Assert.Equal(Column.Name, where.Column);
+            Assert.Equal(Table.Name, where.Table);
+            Assert.Equal(op.GetSql(), where.Operator);
             Assert.Equal(predicate, where.Predicate);
         }
 
         [Fact]
         public void AddWhere_PassesTableAndColumnToNameMethods()
         {
-            _sut.AddWhere(TestTable.Column, TestTable.Table, "", Operator.AND);
+            _sut.AddWhere(Column, Table, "", Operator.And);
 
-            Assert.Single(PassedTableNames.Where(t => t == TestTable.Table.Name));
-            Assert.Single(PassedColumnNames.Where(t => t == TestTable.Column.Name));
+            Assert.Single(PassedTableNames.Where(t => t == Table.Name));
+            Assert.Single(PassedColumnNames.Where(t => t == Column.Name));
         }
     }
 }

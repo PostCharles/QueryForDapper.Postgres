@@ -11,9 +11,9 @@ namespace QueryForDapper.Postgres.Models
 {
     public static class OrderByQueryExtensions
     {
-        public static IQuery OrderBy<T>(this IQuery query, Expression<Func<T, object>> fieldSelector, Order order = default)
+        public static IQuery OrderBy<T>(this IQuery query, Expression<Func<T, object>> propertySelector, Order order = default)
         {
-            query.AddOrderBy(fieldSelector.Body.GetMemberInfo(), typeof(T), order);
+            query.AddOrderBy(propertySelector.Body.GetMemberInfo(), typeof(T), order);
 
             return query;
         }

@@ -35,18 +35,18 @@ namespace Test.QueryTests
         [Fact]
         public void Select_PassesTableAndStarToAddSelect()
         {
-            Query.Select<Left>();
+            Query.Select<Table>();
 
-            _mock.Verify(m => m.AddSelect("*", typeof(Left)));
+            _mock.Verify(m => m.AddSelect("*", typeof(Table)));
         }
 
         [Fact]
         public void SelectViaString_CallsAddSelect()
         {
             var column = "left_id";
-            Query.Select<Left>(column);
+            Query.Select<Table>(column);
 
-            _mock.Verify(m => m.AddSelect(column, typeof(Left)));
+            _mock.Verify(m => m.AddSelect(column, typeof(Table)));
         }
 
         [Fact]
@@ -55,20 +55,20 @@ namespace Test.QueryTests
             var idColumn = "left_id";
             var valueColumn = "value";
 
-            Query.Select<Left>(idColumn, valueColumn);
+            Query.Select<Table>(idColumn, valueColumn);
 
-            _mock.Verify(m => m.AddSelect(idColumn, typeof(Left)));
-            _mock.Verify(m => m.AddSelect(valueColumn, typeof(Left)));
+            _mock.Verify(m => m.AddSelect(idColumn, typeof(Table)));
+            _mock.Verify(m => m.AddSelect(valueColumn, typeof(Table)));
         }
 
         [Fact]
         public void SelectViaExpression_CallsAddSelect()
         {
-            var member = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var member = typeof(Table).GetProperty(nameof(Table.TableId));
             
-            Query.Select<Left>(l => l.LeftId);
+            Query.Select<Table>(l => l.TableId);
             
-            _mock.Verify(m => m.AddSelect(member, typeof(Left)));
+            _mock.Verify(m => m.AddSelect(member, typeof(Table)));
         }
 
         [Fact]

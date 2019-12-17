@@ -13,12 +13,37 @@ namespace Test.KeywordTests
     public class JoinTest
     {
         [Fact]
-        public void Constructor_ReplacesUnderScoreInJoinType()
+        public void Constructor_ConvertsJoinTypeToSql()
         {
-            var sut = new Join("", "", JoinType.FULL_OUTER);
+            var sut = new Join("", "", JoinType.FullOuter);
 
-            Assert.Equal(JoinType.FULL_OUTER.ToString().Replace('_', ' '),
+            Assert.Equal("FULL OUTER",
                          sut.JoinType);
+        }
+
+        [Fact]
+        public void Constructor_SetsIsUsingToTrue()
+        {
+            var sut = new Join("", "", JoinType.FullOuter);
+
+            Assert.True(sut.IsUsing);
+        }
+
+        [Fact]
+        public void OverloadedConstructor_ConvertsJoinTypeToSql()
+        {
+            var sut = new Join("", "", "", "", JoinType.RightOuter);
+
+            Assert.Equal("RIGHT OUTER",
+                         sut.JoinType);
+        }
+
+        [Fact]
+        public void Constructor_SetsIsUsingToFalse()
+        {
+            var sut = new Join("", "", "", "", JoinType.FullOuter);
+
+            Assert.False(sut.IsUsing);
         }
     }
 }

@@ -21,6 +21,8 @@ namespace QueryForDapper.Postgres.Models
 
         void AddJoin(MemberInfo column, Type table, JoinType joinType);
         void AddJoin(string column, Type table, JoinType joinType);
+        void AddJoin(string column, Type table, string columnLeft, Type tableLeft, JoinType joinType);
+        void AddJoin(MemberInfo column, Type table, MemberInfo columnLeft, Type tableLeft, JoinType joinType);
         void AddOrderBy(MemberInfo column, Type table, Order order);
         void AddSelect(MemberInfo column, Type table);
         void AddSelect(string column, Type table);

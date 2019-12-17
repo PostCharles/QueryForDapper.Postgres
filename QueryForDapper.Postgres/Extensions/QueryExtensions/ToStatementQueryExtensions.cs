@@ -12,11 +12,13 @@ namespace QueryForDapper.Postgres.Models
     {
         private const string SELECT = "SELECT";
         private const string ALL = "*";
+        private const string EQUALS = "=";
         private const string FROM = "FROM";
         private const string JOIN = "JOIN";
         private const string USING = "USING";
         private const string ORDER_BY = "ORDER BY";
         private const string OFFSET = "OFFSET";
+        private const string ON = "ON";
         private const string LIMIT = "LIMIT";
         private const string WHERE = "WHERE";
 
@@ -53,7 +55,10 @@ namespace QueryForDapper.Postgres.Models
         {
             foreach (var join in query.Joins)
             {
-                sql = $"{sql} {join.JoinType} {JOIN} {join.Table} {USING} ({join.Column})";
+                sql = $"{sql} {join.JoinType} {JOIN} {join.Table}";
+
+                if (join.IsUsing) sql = $"{sql} {USING} ({join.Column})";
+                else sql = $"{sql} {ON} {join.LeftTable}.{join.LeftColumn} {EQUALS} {join.Table}.{join.Column}";
             }
 
             return sql;

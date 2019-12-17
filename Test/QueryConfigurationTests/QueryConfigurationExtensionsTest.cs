@@ -22,7 +22,7 @@ namespace Test.QueryConfigurationTests
         {
             Func<string, string> columnDelegate = c => c;
 
-            Query.ConfigureTo().NameColumnsWith(columnDelegate);
+            QueryConfiguration.Current.NameColumnsWith(columnDelegate);
 
             Assert.Equal(columnDelegate, QueryConfiguration.Current.ColumnNameMethod);
         }
@@ -32,7 +32,7 @@ namespace Test.QueryConfigurationTests
         {
             Func<string, string> tableDelegate = c => c;
 
-            Query.ConfigureTo().NameTablesWith(tableDelegate);
+            QueryConfiguration.Current.NameTablesWith(tableDelegate);
 
             Assert.Equal(tableDelegate, QueryConfiguration.Current.TableNameMethod);
         }
@@ -40,7 +40,7 @@ namespace Test.QueryConfigurationTests
         [Fact]
         public void UseDefaultNaming_AssignsNameMethodsFromDefaultScheme()
         {
-            Query.ConfigureTo().UseDefaultNaming();
+            QueryConfiguration.Current.UseDefaultNaming();
 
             Assert.Equal(typeof(DefaultScheme).GetMethod(nameof(INamingScheme.RenameColumn)),
                          QueryConfiguration.Current.ColumnNameMethod.Method);
@@ -51,7 +51,7 @@ namespace Test.QueryConfigurationTests
         [Fact]
         public void UsePassthroughNaming_AssignsNameMethodsFromPassthroughScheme()
         {
-            Query.ConfigureTo().UsePassthroughNaming();
+            QueryConfiguration.Current.UsePassthroughNaming();
 
             Assert.Equal(typeof(PassthroughScheme).GetMethod(nameof(INamingScheme.RenameColumn)),
                          QueryConfiguration.Current.ColumnNameMethod.Method);
@@ -62,7 +62,7 @@ namespace Test.QueryConfigurationTests
         [Fact]
         public void UseSnakeCaseNaming_AssignsNameMethodsFromSnakeCaseScheme()
         {
-            Query.ConfigureTo().UseSnakeCaseNaming();
+            QueryConfiguration.Current.UseSnakeCaseNaming();
 
             Assert.Equal(typeof(SnakeCaseScheme).GetMethod(nameof(INamingScheme.RenameColumn)),
                          QueryConfiguration.Current.ColumnNameMethod.Method);
@@ -71,13 +71,35 @@ namespace Test.QueryConfigurationTests
         }
 
         [Fact]
+        public void UseCustomNamingScheme_AssignsNameMethodsFromPassedScheme()
+        {
+            QueryConfiguration.Current.UseCustomNamingScheme(new CustomNamingScheme());
+
+            Assert.Equal(typeof(CustomNamingScheme).GetMethod(nameof(INamingScheme.RenameColumn)),
+                         QueryConfiguration.Current.ColumnNameMethod.Method);
+            Assert.Equal(typeof(CustomNamingScheme).GetMethod(nameof(INamingScheme.RenameTable)),
+                         QueryConfiguration.Current.TableNameMethod.Method);
+        }
+
+        [Fact]
         public void UseColumnAttributeNames_SetsShouldUseColumnAttributesToTrue()
         {
             Assert.False(QueryConfiguration.Current.ShouldUseColumnAttributes);
 
-            Query.ConfigureTo().UseColumnAttributeNames();
+            QueryConfiguration.Current.UseColumnAttributeNames();
 
             Assert.True(QueryConfiguration.Current.ShouldUseColumnAttributes);
+
+        }
+
+        [Fact]
+        public void UseTableAttributeNames_SetsShouldUseTableAttributesToTrue()
+        {
+            Assert.False(QueryConfiguration.Current.ShouldUseTableAttributes);
+
+            QueryConfiguration.Current.UseTableAttributeNames();
+
+            Assert.True(QueryConfiguration.Current.ShouldUseTableAttributes);
 
         }
 
@@ -93,7 +115,7 @@ namespace Test.QueryConfigurationTests
         [Fact]
         public void MapManyToManyViaExpression_AddsMapToJoinMaps()
         {
-            Query.ConfigureTo().UsePassthroughNaming().MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
+            QueryConfiguration.Current.UsePassthroughNaming().MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
 
             var map = QueryConfiguration.Current.JoinMaps.Single();
 
@@ -108,7 +130,7 @@ namespace Test.QueryConfigurationTests
         public void MapManyToManyViaExpression_PassesKeysToColumnNameMetod()
         {
             var renamedColumns = new List<string>();
-            Query.ConfigureTo().NameColumnsWith(s => { renamedColumns.Add(s); return s; })
+            QueryConfiguration.Current.NameColumnsWith(s => { renamedColumns.Add(s); return s; })
                                .MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
 
             Assert.Contains(nameof(Join.LeftId), renamedColumns);
@@ -120,7 +142,7 @@ namespace Test.QueryConfigurationTests
         {
             var leftKey = "leftKeyString";
             var rightKey = "rightKeyString";
-            Query.ConfigureTo().UsePassthroughNaming().MapManyToMany<Left, Join, Right>(leftKey, rightKey);
+            QueryConfiguration.Current.UsePassthroughNaming().MapManyToMany<Left, Join, Right>(leftKey, rightKey);
 
             var map = QueryConfiguration.Current.JoinMaps.Single();
 
@@ -135,7 +157,7 @@ namespace Test.QueryConfigurationTests
         public void MapManyToManyViaString_DoesNotPassKeysToColumnNameMethod()
         {
             int callCount = 0;
-            Query.ConfigureTo().NameColumnsWith(s => { callCount++; return s; }).MapManyToMany<Left, Join, Right>("", "");
+            QueryConfiguration.Current.NameColumnsWith(s => { callCount++; return s; }).MapManyToMany<Left, Join, Right>("", "");
             Assert.Equal(0, callCount);
         }
 
@@ -143,11 +165,11 @@ namespace Test.QueryConfigurationTests
         public void DefineColumnName_AddsDefinitionToColumnDefintions()
         {
             var columnName = "Name";
-            Query.ConfigureTo().DefineColumnName<Left>(l => l.LeftId, columnName);
+            QueryConfiguration.Current.DefineColumnName<Table>(l => l.TableId, columnName);
 
             var defintion = QueryConfiguration.Current.ColumnDefinitions.Single();
-            Assert.Equal(typeof(Left), defintion.TableType);
-            Assert.Equal(nameof(Left.LeftId), defintion.PropertyName);
+            Assert.Equal(typeof(Table), defintion.TableType);
+            Assert.Equal(nameof(Table.TableId), defintion.PropertyName);
             Assert.Equal(columnName, defintion.ColumnName);
         }
 
@@ -155,20 +177,21 @@ namespace Test.QueryConfigurationTests
         public void DefineColumnName_ColumnNameNotPassedToColumnNameMethod()
         {
             var callCount = 0;
-            Query.ConfigureTo().NameColumnsWith(s => { callCount++; return s; }).DefineColumnName<Left>(l => l.LeftId, "");
+            QueryConfiguration.Current.NameColumnsWith(s => { callCount++; return s; }).DefineColumnName<Table>(l => l.TableId, "");
 
             Assert.Equal(0, callCount);
         }
+
 
         [Fact]
         public void DefineColumnNameUsingColumnNaming_AddsDefintionToColumnDefintions()
         {
             var column = "MyColumn";
-            Query.ConfigureTo().UsePassthroughNaming().DefineColumnUsingColumnNaming<Left>(l => l.LeftId, column);
+            QueryConfiguration.Current.UsePassthroughNaming().DefineColumnUsingColumnNaming<Table>(l => l.TableId, column);
 
             var defintion = QueryConfiguration.Current.ColumnDefinitions.Single();
-            Assert.Equal(typeof(Left), defintion.TableType);
-            Assert.Equal(nameof(Left.LeftId), defintion.PropertyName);
+            Assert.Equal(typeof(Table), defintion.TableType);
+            Assert.Equal(nameof(Table.TableId), defintion.PropertyName);
             Assert.Equal(column, defintion.ColumnName);
         }
 
@@ -176,7 +199,7 @@ namespace Test.QueryConfigurationTests
         public void DefineColumnNameUsingColumnNaming_PassesColumnNameToColumnNameMethod()
         {
             var callCount = 0;
-            Query.ConfigureTo().NameColumnsWith(s => { callCount++; return s; }).DefineColumnUsingColumnNaming<Left>(l => l.LeftId, "");
+            QueryConfiguration.Current.NameColumnsWith(s => { callCount++; return s; }).DefineColumnUsingColumnNaming<Table>(l => l.TableId, "");
 
             Assert.Equal(1, callCount);
         }
@@ -184,10 +207,64 @@ namespace Test.QueryConfigurationTests
         [Fact]
         public void DefineColumnNameUsingColumnNaming_CalledBeforeConfiguringNameMethods_ThrowsException()
         {
-            var exception = Assert.Throws<ConfigurationOrderException>(() => Query.ConfigureTo().DefineColumnUsingColumnNaming<Left>(l => l.LeftId, ""));
+            var exception = Assert.Throws<ConfigurationOrderException>(() => QueryConfiguration.Current.DefineColumnUsingColumnNaming<Table>(l => l.TableId, ""));
 
             Assert.Equal(String.Format(ConfigurationOrderException.ERROR_MESSAGE,nameof(QueryConfigurationExtensions.DefineColumnUsingColumnNaming)),
                          exception.Message);
+        }
+
+        [Fact]
+        public void DefineTableName_AddsDefintionToTableDefinitions()
+        {
+            var tableName = "Name";
+            QueryConfiguration.Current.DefineTableName<Table>(tableName);
+
+            var defintion = QueryConfiguration.Current.TableDefinitions.Single();
+
+            Assert.Equal(typeof(Table), defintion.Key);
+            Assert.Equal(tableName, defintion.Value);
+        }
+
+        [Fact]
+        public void DefineTableNameUsingTableNaming_AddsDefintionToTableDefintions()
+        {
+            var column = "MyTable";
+            QueryConfiguration.Current.UsePassthroughNaming().DefineTableUsingTableNaming<Table>(column);
+
+            var defintion = QueryConfiguration.Current.TableDefinitions.Single();
+            Assert.Equal(typeof(Table), defintion.Key);
+            Assert.Equal(column, defintion.Value);
+        }
+
+        [Fact]
+        public void DefineTableNameUsingTableNaming_PassesTableNameToTableNameMethod()
+        {
+            var callCount = 0;
+            QueryConfiguration.Current.NameTablesWith(s => { callCount++; return s; }).DefineTableUsingTableNaming<Table>("");
+
+            Assert.Equal(1, callCount);
+        }
+
+        [Fact]
+        public void DefineTableNameUsingTableNaming_CalledBeforeConfiguringNameMethods_ThrowsException()
+        {
+            var exception = Assert.Throws<ConfigurationOrderException>(() => QueryConfiguration.Current.DefineTableUsingTableNaming<Table>(""));
+
+            Assert.Equal(String.Format(ConfigurationOrderException.ERROR_MESSAGE, nameof(QueryConfigurationExtensions.DefineTableUsingTableNaming)),
+                         exception.Message);
+        }
+    }
+
+    public class CustomNamingScheme : INamingScheme
+    {
+        public string RenameColumn(string column)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string RenameTable(string table)
+        {
+            throw new NotImplementedException();
         }
     }
 }
