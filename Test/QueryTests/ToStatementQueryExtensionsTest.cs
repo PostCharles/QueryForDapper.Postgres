@@ -26,6 +26,24 @@ namespace Test.QueryTests
             _query = new Query("");
         }
 
+        [Fact]
+        public void ToStatement_CreatesStatementInOrder()
+        {
+            var param = "";
+            var sql = Query.FromTable<Left>()
+                           .JoinOn<Join>(j => j.JoinId)
+                           .WhereLike<Right>(r => r.RightId, "Test")
+                           .OrderBy<Left>(l => l.LeftId)
+                           .SkipWith(() => param)
+                           .TakeWith(() => param)
+                           .ToStatement();
+            Assert.Equal($"SELECT * FROM {nameof(Left)} " +
+                        $"INNER JOIN {nameof(Join)} USING ({nameof(Join.JoinId)}) " +
+                        $"WHERE {nameof(Right)}.{nameof(Right.RightId)} ILIKE '%' || 'Test' || '%' " +
+                        $"ORDER BY {nameof(Left)}.{nameof(Left.LeftId)} ASC " +
+                        $"LIMIT @param OFFSET @param",
+                        sql);
+        }
 
         [Fact]
         public void BuildSelect_QueryHasNoSelects_SelectsAll()

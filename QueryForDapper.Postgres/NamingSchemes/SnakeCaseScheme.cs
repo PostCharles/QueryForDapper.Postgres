@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace QueryForDapper.Postgres.NamingSchemes
@@ -11,12 +12,12 @@ namespace QueryForDapper.Postgres.NamingSchemes
     {
         public string RenameColumn(string column)
         {
-            throw new NotImplementedException();
+            return Regex.Match(column, @"^_+") + Regex.Replace(column, @"([a-z0-9])([A-Z])", "$1_$2").ToLower();
         }
 
         public string RenameTable(string table)
         {
-            throw new NotImplementedException();
+            return $"{RenameColumn(table)}s";
         }
     }
 }
