@@ -27,6 +27,12 @@ namespace Test.QueryTests
         }
 
         [Fact]
+        public void ToStatement_Executes_SubStatementInOrder()
+        {
+
+        }
+
+        [Fact]
         public void ToStatement_CreatesStatementInOrder()
         {
             var param = "";
@@ -37,6 +43,7 @@ namespace Test.QueryTests
                            .SkipWith(() => param)
                            .TakeWith(() => param)
                            .ToStatement();
+
             Assert.Equal($"SELECT * FROM {nameof(Left)} " +
                         $"INNER JOIN {nameof(Join)} USING ({nameof(Join.JoinId)}) " +
                         $"WHERE {nameof(Right)}.{nameof(Right.RightId)} ILIKE '%' || 'Test' || '%' " +

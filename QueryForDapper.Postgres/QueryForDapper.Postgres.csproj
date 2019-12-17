@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Version>0.6.0-beta</Version>
+    <PackageProjectUrl>https://github.com/PostCharles/QueryForDapper.Postgres/</PackageProjectUrl>
+    <PackageTags>Dapper Postgres PostgreSQL</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
