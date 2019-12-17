@@ -94,7 +94,7 @@ If no select method as been called the resulting statement will have a `SELECT *
 
 ##### Methods
 | Extension Method | Result|
-|------------------|-------||
+|------------------|-------|
 |`Select<Table>()` | `SELECT Table.* FROM`|
 |`Select<Table>("stringId")` | `SELECT Table.stringId FROM`|
 |`Select<Table>(t => t.TableId)` | `SELECT Table.TableId FROM`|
