@@ -309,3 +309,67 @@ result
 SELECT * FROM Books
 LIMIT @skip
 ```
+
+# Performance
+### Benchmark Method
+```csharp
+public QueryTest()
+{
+    Query.ConfigureTo().UseSnakeCaseNaming().MapManyToMany<Book, BookAuthorJoin, Author>(j => j.BookId, j => j.AuthorId)
+                                            .MapManyToMany<Book, BookGenreJoin, Genre>(j => j.BookId, j => j.GenreId);
+}
+
+[Benchmark]
+public void RunQuery(string lastName, IEnumerable<string> publishers)
+{
+    var genreSubQuery = Query.FromTable<Genre>().WhereLike<Genre>(g => g.Name, "A", like: Like.Begins).Select<Genre>(g => g.Name);
+
+    var query = Query.FromTable<Book>().Select<Book>(b => b.Title)
+                     .JoinOn<Publisher>(p => p.PublisherId).WhereAnyWith<Publisher>(p => p.PublisherId, () => publishers)
+                     .JoinMany<Book, Author>().WhereComparedWith<Author>(a => a.LastName, () => lastName, Operator.And).Select<Author>()
+                     .JoinMany<Book, Genre>().WhereInSubQuery<Genre>(g => g.Name, genreSubQuery, Operator.And).Select<Genre>(g => g.Name)
+                     .ToStatement();
+}
+```
+Query Result
+```SQL
+SELECT
+	books.title,
+	authors.*,
+	genres.name 
+FROM
+	books
+	INNER JOIN publishers USING ( publisher_id )
+	INNER JOIN book_author_joins USING ( book_id )
+	INNER JOIN authors USING ( author_id )
+	INNER JOIN book_genre_joins USING ( book_id )
+	INNER JOIN genres USING ( genre_id ) 
+WHERE
+	publishers.publisher_id = ANY ( @publishers ) 
+	AND authors.last_name = @lastName 
+	AND genres.name IN ( SELECT genres.name FROM genres WHERE genres.name ILIKE 'A' || '%' )
+```
+
+##### Benchmark Result
+```
+Runtime = .NET Core 3.1.0 (CoreCLR 4.700.19.56402, CoreFX 4.700.19.56404), X64 RyuJIT; GC = Concurrent Workstation
+Mean = 154.1972 us, StdErr = 0.7373 us (0.48%); N = 16, StdDev = 2.9491 us
+Min = 149.6960 us, Q1 = 152.0937 us, Median = 153.6798 us, Q3 = 155.2408 us, Max = 161.2378 us
+IQR = 3.1470 us, LowerFence = 147.3732 us, UpperFence = 159.9614 us
+ConfidenceInterval = [151.1944 us; 157.2000 us] (CI 99.9%), Margin = 3.0028 us (1.95% of Mean)
+Skewness = 0.9, Kurtosis = 3.19, MValue = 2
+-------------------- Histogram --------------------
+[148.672 us ; 154.155 us) | @@@@@@@@@
+[154.155 us ; 162.018 us) | @@@@@@@
+---------------------------------------------------
+
+|   Method |     Mean |   Error |  StdDev |
+|--------- |---------:|--------:|--------:|
+| RunQuery | 154.2 us | 3.00 us | 2.95 us |
+
+  #Legends
+  Mean       : Arithmetic mean of all measurements
+  Error      : Half of 99.9% confidence interval
+  StdDev     : Standard deviation of all measurements
+  1 us       : 1 Microsecond (0.000001 sec)
+```
