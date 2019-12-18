@@ -185,7 +185,7 @@ WhereCompared methods have a comparision parameter. `Operator @operator = defaul
 | `Comparison.LessThan` | `<` |
 | `Comparison.LessThanEqual` | `<=` |
 | `Comparison.GreaterThan` | `>` |
-| `Comparison.GreaterThanEqual` | `>` |
+| `Comparison.GreaterThanEqual` | `>=` |
 
 ##### Example
 
