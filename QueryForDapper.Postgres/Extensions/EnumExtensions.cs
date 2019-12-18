@@ -10,7 +10,6 @@ namespace QueryForDapper.Postgres.Extensions
 {
     public static class EnumExtensions
     {
-        public const string ERROR_MESSAGE = "{0} is missing on enum value {1}.{2}";
         public static string GetSql<T>(this T @enum ) where T: Enum
         {
             Type enumType = @enum.GetType();
