@@ -105,11 +105,14 @@ If no select method as been called the resulting statement will have a `SELECT *
 
 ```csharp
 Query.FromTable<Authors>().Select<Authors>(a => a.FirstName, a.LastName)
+                          .JoinOn<Books>(b => b.AuthorId)
                           .Select<Books>(b => b.Title);
 ```
 result:
 ```sql
 SELECT Authors.FirstName, Authors.LastName, Books.Title FROM Authors
+INNER JOIN Books USING (AuthorId)
+
 ```
 
 ## Join
