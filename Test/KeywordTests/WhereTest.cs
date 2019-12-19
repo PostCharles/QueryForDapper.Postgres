@@ -25,7 +25,7 @@ namespace Test.KeywordTests
         [Fact]
         public void Constructor_OperatorIsNotNone_SetsOperatorToStringOfValue()
         {
-            var op = Operator.And;
+            var op = Operator.None;
             var sut = new Where("", "", op, "");
 
             Assert.Equal(op.GetSql(), sut.Operator);

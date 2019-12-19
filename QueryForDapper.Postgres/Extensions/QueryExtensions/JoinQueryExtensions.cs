@@ -41,7 +41,7 @@ namespace QueryForDapper.Postgres.Models
             return query;
         }
 
-        public static IQuery JoinMany<TLeft, TRight>(this IQuery query)
+        public static IQuery JoinMany<TLeft, TRight>(this IQuery query, JoinType joinType = default)
         {
             var leftType = typeof(TLeft);
             var rightType = typeof(TRight);
@@ -52,10 +52,10 @@ namespace QueryForDapper.Postgres.Models
             if (joinMap is null) throw new JoinMapNotFound(leftType, rightType);
 
             var left = joinMap.GetLeft(leftType);
-            query.AddJoin(left.Column, left.Table, JoinType.Inner);
+            query.AddJoin(left.Column, left.Table, joinType);
             
             var right = joinMap.GetRight(rightType);
-            query.AddJoin(right.Column, right.Table, JoinType.Inner);
+            query.AddJoin(right.Column, right.Table, joinType);
 
             return query;
         }

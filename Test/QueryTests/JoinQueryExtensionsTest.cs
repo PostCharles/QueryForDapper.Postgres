@@ -128,5 +128,22 @@ namespace Test.QueryTests
             var right = joinMap.GetRight(typeof(Left));
             _mock.Verify(m => m.AddJoin(right.Column, right.Table, JoinType.Inner));
         }
+
+        [Theory]
+        [InlineData(JoinType.Inner)]
+        [InlineData(JoinType.FullOuter)]
+        public void JoinMany_JoinMapDefined_UsesPassedJoinTypeForJoinAndRightTables(JoinType joinType)
+        {
+            QueryConfiguration.Current.UseDefaultNaming().MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
+
+            Query.JoinMany<Left, Right>(joinType);
+
+            var joinMap = QueryConfiguration.Current.JoinMaps.Single();
+            var left = joinMap.GetLeft(typeof(Left));
+            _mock.Verify(m => m.AddJoin(left.Column, left.Table, joinType));
+
+            var right = joinMap.GetRight(typeof(Right));
+            _mock.Verify(m => m.AddJoin(right.Column, right.Table, joinType));
+        }
     }
 }
