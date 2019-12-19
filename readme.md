@@ -153,6 +153,17 @@ SELECT * FROM LeftTable
 INNER JOIN JoinTable USING (LeftId)
 INNER JOIN RightTable USING (RightId)
 ```
+The left and right types declared in .`MapManyToMany<,,>()` can be called in reverse order in`.JoinMany<,>()`.
+```csharp
+Query.FromTable<Right>().JoinMany<Right,Left>()
+                       .ToStatement();
+```
+result
+```sql
+SELECT * FROM RightTable
+INNER JOIN JoinTable USING (RightId)
+INNER JOIN LeftTable USING (LeftId)
+```
 
 ## Where
 
