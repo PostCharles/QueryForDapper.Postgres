@@ -140,7 +140,7 @@ The last parameter of each Join Method is `JoinType joinType = default`. The def
 `JoinType.FullOuter` | `FULL OUTER`
 
 ### JoinMany
-If you defined a join map in configuration you can use the method:
+If you defined a join map in configuration you can use the `.JoinMany<,>()` method:
 ```csharp
 Query.ConfigureTo().MapManyToMany<LeftTable, JoinTable, RightTable>(j => j.LeftId, j => j.rightId);
 
@@ -155,14 +155,14 @@ INNER JOIN RightTable USING (RightId)
 ```
 The left and right types declared in .`MapManyToMany<,,>()` can be called in reverse order in`.JoinMany<,>()`.
 ```csharp
-Query.FromTable<Right>().JoinMany<Right,Left>()
+Query.FromTable<Right>().JoinMany<Right,Left>(JoinType.LeftOuter)
                        .ToStatement();
 ```
 result
 ```sql
 SELECT * FROM RightTable
-INNER JOIN JoinTable USING (RightId)
-INNER JOIN LeftTable USING (LeftId)
+LEFT OUTER JOIN JoinTable USING (RightId)
+LEFT OUTER JOIN LeftTable USING (LeftId)
 ```
 
 ## Where
@@ -237,9 +237,9 @@ WhereLike methods have a Like parameter. `Like like = default`. Default Is Anywh
 
 | Operator | Result|
 |------------------|-------|
-| `Like.Anywhere` | `'%' || {VALUE/VARIABLE} || '%'` |
-| `Like.Begins` | `{VALUE/VARIABLE} || '%'` |
-| `Like.Ends` | `'%' || {VALUE/VARIABLE}` |
+| `Like.Anywhere` | `'%' \|\| {'VALUE'/@VARIABLE} \|\| '%'` |
+| `Like.Begins` | `{'VALUE'/@VARIABLE} \|\| '%'` |
+| `Like.Ends` | `'%' \|\| {'VALUE'/@VARIABLE}` |
 
 ##### Example
 
@@ -319,4 +319,68 @@ result
 ```sql
 SELECT * FROM Books
 LIMIT @skip
+```
+# Performance
+### Benchmark Method
+```csharp
+public QueryTest()
+{
+    Query.ConfigureTo().UseSnakeCaseNaming().MapManyToMany<Book, BookAuthorJoin, Author>(j => j.BookId, j => j.AuthorId)
+                                            .MapManyToMany<Book, BookGenreJoin, Genre>(j => j.BookId, j => j.GenreId);
+}
+
+[Benchmark]
+public void RunQuery(string lastName, IEnumerable<string> publishers)
+{
+    var genreSubQuery = Query.FromTable<Genre>().WhereLike<Genre>(g => g.Name, "A", like: Like.Begins).Select<Genre>(g => g.Name);
+
+    var query = Query.FromTable<Book>().Select<Book>(b => b.Title)
+                     .JoinOn<Publisher>(p => p.PublisherId).WhereAnyWith<Publisher>(p => p.PublisherId, () => publishers)
+                     .JoinMany<Book, Author>().WhereComparedWith<Author>(a => a.LastName, () => lastName, Operator.And).Select<Author>()
+                     .JoinMany<Book, Genre>().WhereInSubQuery<Genre>(g => g.Name, genreSubQuery, Operator.And).Select<Genre>(g => g.Name)
+                     .ToStatement();
+}
+```
+Query Result
+```sql
+SELECT
+	books.title,
+	authors.*,
+	genres.name 
+FROM
+	books
+	INNER JOIN publishers USING ( publisher_id )
+	LEFT OUTER JOIN book_author_joins USING ( book_id )
+	LEFT OUTER JOIN authors USING ( author_id )
+	LEFT OUTER JOIN book_genre_joins USING ( book_id )
+	LEFT OUTER JOIN genres USING ( genre_id ) 
+WHERE
+	publishers.publisher_id = ANY ( @publishers ) 
+	AND authors.last_name = @lastName 
+	AND genres.name IN ( SELECT genres.name FROM genres WHERE genres.name ILIKE'A' || '%' )
+```
+Benchmark Results
+```
+Runtime = .NET Core 3.1.0 (CoreCLR 4.700.19.56402, CoreFX 4.700.19.56404), X64 RyuJIT; GC = Concurrent Workstation
+Mean = 177.7263 us, StdErr = 0.6719 us (0.38%); N = 15, StdDev = 2.6024 us
+Min = 174.4226 us, Q1 = 175.6583 us, Median = 177.0236 us, Q3 = 179.6323 us, Max = 183.1319 us
+IQR = 3.9740 us, LowerFence = 169.6974 us, UpperFence = 185.5933 us
+ConfidenceInterval = [174.9442 us; 180.5084 us] (CI 99.9%), Margin = 2.7821 us (1.57% of Mean)
+Skewness = 0.66, Kurtosis = 2.17, MValue = 2
+-------------------- Histogram --------------------
+[173.499 us ; 178.605 us) | @@@@@@@@@@
+[178.605 us ; 184.055 us) | @@@@@
+---------------------------------------------------
+
+|   Method |     Mean |   Error |  StdDev |
+|--------- |---------:|--------:|--------:|
+| RunQuery | 177.7 us | 2.78 us | 2.60 us |
+
+  * Legends *
+  lastName   : Value of the 'lastName' parameter
+  publishers : Value of the 'publishers' parameter
+  Mean       : Arithmetic mean of all measurements
+  Error      : Half of 99.9% confidence interval
+  StdDev     : Standard deviation of all measurements
+  1 us       : 1 Microsecond (0.000001 sec)
 ```
