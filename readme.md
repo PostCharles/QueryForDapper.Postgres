@@ -357,7 +357,7 @@ FROM
 WHERE
 	publishers.publisher_id = ANY ( @publishers ) 
 	AND authors.last_name = @lastName 
-	AND genres.name IN ( SELECT genres.name FROM genres WHERE genres.name ILIKE'A' || '%' )
+	AND genres.name IN ( SELECT genres.name FROM genres WHERE genres.name ILIKE 'A' || '%' )
 ```
 Benchmark Results
 ```
