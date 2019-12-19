@@ -336,8 +336,8 @@ public void RunQuery(string lastName, IEnumerable<string> publishers)
 
     var query = Query.FromTable<Book>().Select<Book>(b => b.Title)
                      .JoinOn<Publisher>(p => p.PublisherId).WhereAnyWith<Publisher>(p => p.PublisherId, () => publishers)
-                     .JoinMany<Book, Author>().WhereComparedWith<Author>(a => a.LastName, () => lastName, Operator.And).Select<Author>()
-                     .JoinMany<Book, Genre>().WhereInSubQuery<Genre>(g => g.Name, genreSubQuery, Operator.And).Select<Genre>(g => g.Name)
+                     .JoinMany<Book, Author>(JoinType.LeftOuter).WhereComparedWith<Author>(a => a.LastName, () => lastName, Operator.And).Select<Author>()
+                     .JoinMany<Book, Genre>(JoinType.LeftOuter).WhereInSubQuery<Genre>(g => g.Name, genreSubQuery, Operator.And).Select<Genre>(g => g.Name)
                      .ToStatement();
 }
 ```
