@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Test.Models
+namespace Test.TestModels
 {
     public class DeclaringType
     {

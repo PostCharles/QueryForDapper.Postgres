@@ -8,8 +8,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Test.Fixtures;
-using Test.Models;
+using Test.Helpers;
+using Test.Mocks;
+using Test.TestModels;
 using Xunit;
 
 namespace Test.QueryTests
@@ -38,7 +39,7 @@ namespace Test.QueryTests
         public void JoinOnViaString_PassesValuesToAddJoin()
         {
             var column = "column";
-            var joinType = JoinType.inner;
+            var joinType = JoinType.Inner;
 
             Query.JoinOn<Table>(column, joinType);
 
@@ -65,7 +66,7 @@ namespace Test.QueryTests
             var right = "Right";
             Query.JoinOn<Left, Right>(left, right);
 
-            _mock.Verify(m => m.AddJoin(right, typeof(Right), left, typeof(Left), JoinType.inner));
+            _mock.Verify(m => m.AddJoin(right, typeof(Right), left, typeof(Left), JoinType.Inner));
         }
 
         [Fact]
@@ -76,9 +77,18 @@ namespace Test.QueryTests
 
             Query.JoinOn<Left, Right>(l => l.LeftId, r => r.RightId);
 
-            _mock.Verify(m => m.AddJoin(right, typeof(Right), left, typeof(Left), JoinType.inner));
+            _mock.Verify(m => m.AddJoin(right, typeof(Right), left, typeof(Left), JoinType.Inner));
         }
 
+        [Fact]
+        public void CanJoin_LeftRightTypesAreEqual_ThrowsException()
+        {
+            var type = typeof(Left);
+            var exception = Assert.Throws<JoinManyLeftRightEqualException>(() => Query.JoinMany<Left, Left>());
+            Assert.Equal(String.Format(JoinManyLeftRightEqualException.ERRROR_MESSAGE, type.Name),
+                         exception.Message);
+        }
+        
         [Fact]
         public void JoinMany_NoMapExistForType_ThrowsJoinMapNotFoundException()
         {
@@ -96,9 +106,27 @@ namespace Test.QueryTests
             Query.JoinMany<Left, Right>();
 
             var joinMap = QueryConfiguration.Current.JoinMaps.Single();
+            var left = joinMap.GetLeft(typeof(Left));
+            _mock.Verify(m => m.AddJoin(left.Column, left.Table, JoinType.Inner));
 
-            _mock.Verify(m => m.AddJoin(joinMap.LeftKey, joinMap.JoinTable, JoinType.inner));
-            _mock.Verify(m => m.AddJoin(joinMap.RightKey, joinMap.RightTable, JoinType.inner));
+            var right = joinMap.GetRight(typeof(Right));
+            _mock.Verify(m => m.AddJoin(right.Column, right.Table, JoinType.Inner));
+        }
+
+        [Fact]
+        public void JoinMany_JoinMapDefinedAndTablesAreReversed_AddsJoinsFromMapInReverse()
+        {
+            QueryConfiguration.Current.UseDefaultNaming().MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
+
+            Query.JoinMany<Right, Left>();
+
+            var joinMap = QueryConfiguration.Current.JoinMaps.Single();
+
+            var left = joinMap.GetLeft(typeof(Right));
+            _mock.Verify(m => m.AddJoin(left.Column, left.Table, JoinType.Inner));
+
+            var right = joinMap.GetRight(typeof(Left));
+            _mock.Verify(m => m.AddJoin(right.Column, right.Table, JoinType.Inner));
         }
     }
 }

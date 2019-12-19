@@ -9,7 +9,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Test.Models;
+using Test.Helpers;
+using Test.TestModels;
 using Xunit;
 
 namespace Test.QueryConfigurationTests

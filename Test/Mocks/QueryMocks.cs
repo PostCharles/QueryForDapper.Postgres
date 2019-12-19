@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
-namespace Test.Fixtures
+namespace Test.Mocks
 {
     public static class QueryMocks
     {

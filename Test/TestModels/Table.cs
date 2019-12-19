@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Test.Models
+namespace Test.TestModels
 {
-    public class UsingType : DeclaringType
+    public class Table
     {
-        
+        public int TableId { get; set; }
     }
 }

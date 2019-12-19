@@ -1,4 +1,6 @@
-﻿using System;
+﻿using QueryForDapper.Postgres.Enums;
+using QueryForDapper.Postgres.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,21 +11,37 @@ namespace QueryForDapper.Postgres.Models
 {
     public class JoinMap
     {
-        public string LeftKey { get; }
-        public Type LeftTable { get; }
-        public Type JoinTable { get; }
-        public Type RightTable { get; }
-        public string RightKey { get; }
 
-        public JoinMap(Type leftTable, Type joinTable, Type rightTable, string leftKey, string rightKey)
+        public IDictionary<Type,string> ColumnsByTable { get; }
+        public Type JoinTable { get; }
+
+
+        public JoinMap(Type leftTable, Type joinTable, Type rightTable, string leftColumn, string rightColumn)
         {
-            LeftTable = leftTable;
             JoinTable = joinTable;
-            RightTable = rightTable;
-            LeftKey = leftKey;
-            RightKey = rightKey;
+            
+            ColumnsByTable = new Dictionary<Type, string>()
+            {
+                {leftTable, leftColumn },
+                {rightTable, rightColumn }
+            };
+
         }
 
+        public bool CanJoin(Type leftTable, Type rightTable)
+        {            
+            return (ColumnsByTable.ContainsKey(leftTable) && 
+                    ColumnsByTable.ContainsKey(rightTable));
+        }
 
+        public (string Column, Type Table) GetLeft(Type leftTable)
+        {
+            return (ColumnsByTable[leftTable], JoinTable);
+        }
+
+        public (string Column, Type Table) GetRight(Type rightTable)
+        {
+            return (ColumnsByTable[rightTable], rightTable);
+        }
     }
 }

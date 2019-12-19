@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using QueryForDapper.Postgres.Models;
 using System.Text;
 using System.Threading.Tasks;
-using Test.Models;
+using Test.TestModels;
 using Xunit;
 
 namespace Test

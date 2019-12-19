@@ -7,7 +7,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Test.Models;
+using Test.Helpers;
+using Test.TestModels;
 using Xunit;
 
 namespace Test.QueryTests
@@ -106,7 +107,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoin_AddsJoinToJoins()
         {
-            var joinType = JoinType.inner;
+            var joinType = JoinType.Inner;
 
             _sut.AddJoin(Column, Table, joinType);
 
@@ -120,7 +121,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoin_PassesTableAndColumnToNameMethods()
         {
-            _sut.AddJoin(Column, Table, JoinType.inner);
+            _sut.AddJoin(Column, Table, JoinType.Inner);
 
             Assert.Single(PassedColumnNames.Where(c => c == Column.Name));
             Assert.Single(PassedTableNames.Where(t => t == Table.Name));
@@ -129,7 +130,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoinWithStringColumn_AddsJoinToJoins()
         {
-            var joinType = JoinType.inner;
+            var joinType = JoinType.Inner;
 
             _sut.AddJoin(Column.Name, Table, joinType);
 
@@ -144,7 +145,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoinLeftAndRightWithStringColumns_PassesTablesToNameMethods()
         {
-            _sut.AddJoin(Column.Name, Table, LeftColumn.Name, LeftTable, JoinType.inner);
+            _sut.AddJoin(Column.Name, Table, LeftColumn.Name, LeftTable, JoinType.Inner);
 
             Assert.Empty(PassedColumnNames.Where(c => c == Column.Name || c == LeftColumn.Name));
             Assert.Single(PassedTableNames.Where(t => t == Table.Name));
@@ -154,7 +155,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoinLeftAndRight_AddsJoinToJoins()
         {
-            var joinType = JoinType.inner;
+            var joinType = JoinType.Inner;
 
             _sut.AddJoin(Column, Table, LeftColumn, LeftTable, joinType);
 
@@ -170,7 +171,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoinLeftAndRight_PassesTablesAndColumnsToNameMethods()
         {
-            _sut.AddJoin(Column, Table, LeftColumn, LeftTable, JoinType.inner);
+            _sut.AddJoin(Column, Table, LeftColumn, LeftTable, JoinType.Inner);
 
             Assert.Single(PassedColumnNames.Where(c => c == Column.Name));
             Assert.Single(PassedColumnNames.Where(c => c == LeftColumn.Name));
@@ -181,7 +182,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoinWithStringColumn_PassesTableToNameMethods()
         {
-            _sut.AddJoin(Column.Name, Table, JoinType.inner);
+            _sut.AddJoin(Column.Name, Table, JoinType.Inner);
 
             Assert.Empty(PassedColumnNames.Where(c => c == Column.Name));
             Assert.Single(PassedTableNames.Where(t => t == Table.Name));
@@ -190,7 +191,7 @@ namespace Test.QueryTests
         [Fact]
         public void AddJoinLeftAndRightWithStringColumns_AddsJoinToJoins()
         {
-            var joinType = JoinType.inner;
+            var joinType = JoinType.Inner;
 
             _sut.AddJoin(Column.Name, Table, LeftColumn.Name, LeftTable, joinType);
 

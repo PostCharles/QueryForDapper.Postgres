@@ -3,7 +3,8 @@ using QueryForDapper.Postgres.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Test.Fixtures;
+using Test.Helpers;
+using Test.Mocks;
 using Xunit;
 
 namespace Test.QueryTests

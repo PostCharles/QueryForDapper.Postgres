@@ -6,7 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using Test.Models;
+using Test.TestModels;
+using Test.Helpers;
 
 namespace Test
 {

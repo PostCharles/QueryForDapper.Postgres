@@ -7,7 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Test.Models;
+using Test.Helpers;
+using Test.TestModels;
 using Xunit;
 
 namespace Test.QueryConfigurationTests
@@ -115,15 +116,15 @@ namespace Test.QueryConfigurationTests
         [Fact]
         public void MapManyToManyViaExpression_AddsMapToJoinMaps()
         {
-            QueryConfiguration.Current.UsePassthroughNaming().MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
+            QueryConfiguration.Current.UsePassthroughNaming()
+                                      .MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
 
             var map = QueryConfiguration.Current.JoinMaps.Single();
 
-            Assert.Equal(typeof(Left), map.LeftTable);
             Assert.Equal(typeof(Join), map.JoinTable);
-            Assert.Equal(typeof(Right), map.RightTable);
-            Assert.Equal(nameof(Join.LeftId), map.LeftKey);
-            Assert.Equal(nameof(Join.RightId), map.RightKey);
+            Assert.True(map.ColumnsByTable[typeof(Left)] == nameof(Join.LeftId));
+            Assert.True(map.ColumnsByTable[typeof(Right)] == nameof(Join.RightId));
+
         }
 
         [Fact]
@@ -146,11 +147,9 @@ namespace Test.QueryConfigurationTests
 
             var map = QueryConfiguration.Current.JoinMaps.Single();
 
-            Assert.Equal(typeof(Left), map.LeftTable);
+            Assert.True(map.ColumnsByTable[typeof(Left)] == leftKey);
+            Assert.True(map.ColumnsByTable[typeof(Right)] == rightKey);
             Assert.Equal(typeof(Join), map.JoinTable);
-            Assert.Equal(typeof(Right), map.RightTable);
-            Assert.Equal(leftKey, leftKey);
-            Assert.Equal(rightKey, rightKey);
         }
 
         [Fact]

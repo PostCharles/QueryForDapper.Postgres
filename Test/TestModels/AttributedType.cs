@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Test.Models
+namespace Test.TestModels
 {
 
     [Table(AttributedType.TABLE_ATTRIBUTE_VALUE)]

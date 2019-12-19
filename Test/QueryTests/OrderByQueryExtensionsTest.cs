@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Test.Fixtures;
-using Test.Models;
+using Test.Helpers;
+using Test.Mocks;
+using Test.TestModels;
 using Xunit;
 
 namespace Test.QueryTests
