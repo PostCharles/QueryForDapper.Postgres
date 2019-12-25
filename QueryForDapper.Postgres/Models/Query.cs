@@ -71,12 +71,12 @@ namespace QueryForDapper.Postgres.Models
 
         public void AddOrderBy(MemberInfo column, Type table, Order order)
         {
-            _orderBys.Add(new OrderBy(column.ToColumnName(), table.ToTableName(), order));
+            _orderBys.Add(new OrderBy(column.ToColumnName(table), table.ToTableName(), order));
         }
 
         public void AddJoin(MemberInfo column, Type table, JoinType joinType)
         {
-            _joins.Add(new Join(column.ToColumnName(), table.ToTableName(), joinType));
+            _joins.Add(new Join(column.ToColumnName(table), table.ToTableName(), joinType));
         }
 
         public void AddJoin(string column, Type table, JoinType joinType)
@@ -91,12 +91,12 @@ namespace QueryForDapper.Postgres.Models
 
         public void AddJoin(MemberInfo column, Type table, MemberInfo columnLeft, Type tableLeft, JoinType joinType)
         {
-            _joins.Add(new Join(column.ToColumnName(), table.ToTableName(), columnLeft.ToColumnName(), tableLeft.ToTableName(), joinType));
+            _joins.Add(new Join(column.ToColumnName(table), table.ToTableName(), columnLeft.ToColumnName(tableLeft), tableLeft.ToTableName(), joinType));
         }
 
         public void AddSelect(MemberInfo column, Type table)
         {
-            _selects.Add(new Select(column.ToColumnName(), table.ToTableName()));
+            _selects.Add(new Select(column.ToColumnName(table), table.ToTableName()));
         }
         public void AddSelect(string column, Type table)
         {
@@ -105,7 +105,7 @@ namespace QueryForDapper.Postgres.Models
 
         public void AddWhere(MemberInfo column, Type table, string predicate, Operator @operator)
         {
-            _wheres.Add(new Where(column.ToColumnName(), table.ToTableName(), 
+            _wheres.Add(new Where(column.ToColumnName(table), table.ToTableName(), 
                                   @operator, 
                                   predicate));
         }
