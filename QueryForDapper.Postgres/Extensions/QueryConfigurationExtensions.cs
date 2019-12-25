@@ -71,11 +71,13 @@ namespace QueryForDapper.Postgres.Models
 
             try
             {
-                QueryConfiguration.Current.JoinMaps.Add(new JoinMap(typeof(TLeft),
+                var leftType = typeof(TLeft);
+                var rightType = typeof(TRight);
+                QueryConfiguration.Current.JoinMaps.Add(new JoinMap(leftType,
                                                             typeof(TJoin),
-                                                            typeof(TRight),
-                                                            leftKey.Body.GetMemberInfo().ToColumnName(),
-                                                            rightKey.Body.GetMemberInfo().ToColumnName()));
+                                                            rightType,
+                                                            leftKey.Body.GetMemberInfo().ToColumnName(leftType),
+                                                            rightKey.Body.GetMemberInfo().ToColumnName(rightType)));
                 return config;
             }
             catch (NameMethodNotSetException ex)

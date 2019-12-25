@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,11 @@ namespace QueryForDapper.Postgres.Models
             TableType = tableType;
             PropertyName = propertyName;
             ColumnName = columnName;
+        }
+
+        public bool IsMatch(string column, Type table)
+        {
+            return (column == PropertyName && table == TableType);
         }
     }
 }

@@ -41,9 +41,10 @@ namespace Test
         [Fact]
         public void ToColumnNameViaMemberInfo_PassesValueToColumnNameMethod()
         {
-            var member = typeof(Left).GetProperty(nameof(Left.LeftId));
+            var tableType = typeof(Table);
+            var member = tableType.GetProperty(nameof(Table.TableId));
 
-            var result = member.ToColumnName();
+            var result = member.ToColumnName(tableType);
 
             Assert.Single(PassedColumnNames.Where(c => c == member.Name));
             Assert.Equal($"{member.Name}{SUFFIX}", result);
@@ -54,10 +55,11 @@ namespace Test
         {
             var definedColumn = "ColumnName";
             QueryConfiguration.Current.DefineColumnName<UsingType>(l => l.Declared, definedColumn);
-            
-            var member = typeof(UsingType).GetProperty(nameof(UsingType.Declared));
 
-            var result = member.ToColumnName();
+            var tableType = typeof(UsingType);
+            var member = tableType.GetProperty(nameof(UsingType.Declared));
+
+            var result = member.ToColumnName(tableType);
 
             Assert.Empty(PassedColumnNames);
             Assert.Equal(definedColumn, result);
@@ -66,11 +68,12 @@ namespace Test
         [Fact]
         public void ToColumnNameViaMemberInfo_HasColumnAttribute_ReturnsNameFromAttribute()
         {
-            var member = typeof(AttributedType).GetProperty(nameof(AttributedType.id));
+            var tableType = typeof(AttributedType);
+            var member = tableType.GetProperty(nameof(AttributedType.id));
 
             QueryConfiguration.Current.ShouldUseColumnAttributes = true;
 
-            var result = member.ToColumnName();
+            var result = member.ToColumnName(tableType);
 
             Assert.Equal(AttributedType.COLUMN_ATTRIBUTE_VALUE, result);
         }
@@ -81,11 +84,39 @@ namespace Test
             var definedColumn = "defined_column_name";
             QueryConfiguration.Current.DefineColumnName<AttributedType>(c => c.id, definedColumn);
 
-            var member = typeof(AttributedType).GetProperty(nameof(AttributedType.id));
+            var tableType = typeof(AttributedType);
+            var member = tableType.GetProperty(nameof(AttributedType.id));
 
-            var result = member.ToColumnName();
+            var result = member.ToColumnName(tableType);
 
             Assert.Equal(definedColumn, result);
+        }
+
+        [Fact]
+        public void ToColumnNameViaMemberInfo_ColumnFromGenericBaseType_ReturnsColumnNameFromAttributeOnDerivedType()
+        {
+            QueryConfiguration.Current.UseColumnAttributeNames();
+           
+            var tableType = typeof(UsingAttributedType);
+            var member = typeof(DeclaringType).GetProperty(nameof(UsingAttributedType.Declared));
+
+            var result = member.ToColumnName(tableType);
+
+            Assert.Equal(UsingAttributedType.COLUMN_ATTRIBUTE_NAME, result);
+        }
+
+        [Fact]
+        public void ToColumnNameViaMemberInfo_ColumnFromGenericBaseType_ReturnsColumnNameDefinedOnDerivedType()
+        {
+            var columnName = "TestColumnName";
+            QueryConfiguration.Current.DefineColumnName<UsingType>(t => t.Declared, columnName);
+
+            var tableType = typeof(UsingType);
+            var member = typeof(DeclaringType).GetProperty(nameof(UsingType.Declared));
+
+            var result = member.ToColumnName(tableType);
+
+            Assert.Equal(columnName, result);
         }
 
         [Fact]

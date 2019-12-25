@@ -6,6 +6,6 @@ namespace Test.TestModels
 {
     public class DeclaringType
     {
-        public string Declared { get; set; }
+        public virtual string Declared { get; set; }
     }
 }
