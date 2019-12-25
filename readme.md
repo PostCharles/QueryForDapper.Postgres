@@ -140,7 +140,7 @@ The last parameter of each Join Method is `JoinType joinType = default`. The def
 `JoinType.FullOuter` | `FULL OUTER`
 
 ### JoinMany
-If you defined a join map in configuration you can use the method:
+If you defined a join map in configuration you can use the `.JoinMany<,>()` method:
 ```csharp
 Query.ConfigureTo().MapManyToMany<LeftTable, JoinTable, RightTable>(j => j.LeftId, j => j.rightId);
 
@@ -155,14 +155,14 @@ INNER JOIN RightTable USING (RightId)
 ```
 The left and right types declared in .`MapManyToMany<,,>()` can be called in reverse order in`.JoinMany<,>()`.
 ```csharp
-Query.FromTable<Right>().JoinMany<Right,Left>()
+Query.FromTable<Right>().JoinMany<Right,Left>(JoinType.LeftOuter)
                        .ToStatement();
 ```
 result
 ```sql
 SELECT * FROM RightTable
-INNER JOIN JoinTable USING (RightId)
-INNER JOIN LeftTable USING (LeftId)
+LEFT OUTER JOIN JoinTable USING (RightId)
+LEFT OUTER JOIN LeftTable USING (LeftId)
 ```
 
 ## Where
@@ -237,9 +237,9 @@ WhereLike methods have a Like parameter. `Like like = default`. Default Is Anywh
 
 | Operator | Result|
 |------------------|-------|
-| `Like.Anywhere` | `'%' || {VALUE/VARIABLE} || '%'` |
-| `Like.Begins` | `{VALUE/VARIABLE} || '%'` |
-| `Like.Ends` | `'%' || {VALUE/VARIABLE}` |
+| `Like.Anywhere` | `'%' \|\| {'VALUE'/@VARIABLE} \|\| '%'` |
+| `Like.Begins` | `{'VALUE'/@VARIABLE} \|\| '%'` |
+| `Like.Ends` | `'%' \|\| {'VALUE'/@VARIABLE}` |
 
 ##### Example
 
@@ -320,7 +320,6 @@ result
 SELECT * FROM Books
 LIMIT @skip
 ```
-
 # Performance
 ### Benchmark Method
 ```csharp
@@ -337,13 +336,13 @@ public void RunQuery(string lastName, IEnumerable<string> publishers)
 
     var query = Query.FromTable<Book>().Select<Book>(b => b.Title)
                      .JoinOn<Publisher>(p => p.PublisherId).WhereAnyWith<Publisher>(p => p.PublisherId, () => publishers)
-                     .JoinMany<Book, Author>().WhereComparedWith<Author>(a => a.LastName, () => lastName, Operator.And).Select<Author>()
-                     .JoinMany<Book, Genre>().WhereInSubQuery<Genre>(g => g.Name, genreSubQuery, Operator.And).Select<Genre>(g => g.Name)
+                     .JoinMany<Book, Author>(JoinType.LeftOuter).WhereComparedWith<Author>(a => a.LastName, () => lastName, Operator.And).Select<Author>()
+                     .JoinMany<Book, Genre>(JoinType.LeftOuter).WhereInSubQuery<Genre>(g => g.Name, genreSubQuery, Operator.And).Select<Genre>(g => g.Name)
                      .ToStatement();
 }
 ```
 Query Result
-```SQL
+```sql
 SELECT
 	books.title,
 	authors.*,
@@ -351,34 +350,35 @@ SELECT
 FROM
 	books
 	INNER JOIN publishers USING ( publisher_id )
-	INNER JOIN book_author_joins USING ( book_id )
-	INNER JOIN authors USING ( author_id )
-	INNER JOIN book_genre_joins USING ( book_id )
-	INNER JOIN genres USING ( genre_id ) 
+	LEFT OUTER JOIN book_author_joins USING ( book_id )
+	LEFT OUTER JOIN authors USING ( author_id )
+	LEFT OUTER JOIN book_genre_joins USING ( book_id )
+	LEFT OUTER JOIN genres USING ( genre_id ) 
 WHERE
 	publishers.publisher_id = ANY ( @publishers ) 
 	AND authors.last_name = @lastName 
 	AND genres.name IN ( SELECT genres.name FROM genres WHERE genres.name ILIKE 'A' || '%' )
 ```
-
-##### Benchmark Result
+Benchmark Results
 ```
 Runtime = .NET Core 3.1.0 (CoreCLR 4.700.19.56402, CoreFX 4.700.19.56404), X64 RyuJIT; GC = Concurrent Workstation
-Mean = 154.1972 us, StdErr = 0.7373 us (0.48%); N = 16, StdDev = 2.9491 us
-Min = 149.6960 us, Q1 = 152.0937 us, Median = 153.6798 us, Q3 = 155.2408 us, Max = 161.2378 us
-IQR = 3.1470 us, LowerFence = 147.3732 us, UpperFence = 159.9614 us
-ConfidenceInterval = [151.1944 us; 157.2000 us] (CI 99.9%), Margin = 3.0028 us (1.95% of Mean)
-Skewness = 0.9, Kurtosis = 3.19, MValue = 2
+Mean = 177.7263 us, StdErr = 0.6719 us (0.38%); N = 15, StdDev = 2.6024 us
+Min = 174.4226 us, Q1 = 175.6583 us, Median = 177.0236 us, Q3 = 179.6323 us, Max = 183.1319 us
+IQR = 3.9740 us, LowerFence = 169.6974 us, UpperFence = 185.5933 us
+ConfidenceInterval = [174.9442 us; 180.5084 us] (CI 99.9%), Margin = 2.7821 us (1.57% of Mean)
+Skewness = 0.66, Kurtosis = 2.17, MValue = 2
 -------------------- Histogram --------------------
-[148.672 us ; 154.155 us) | @@@@@@@@@
-[154.155 us ; 162.018 us) | @@@@@@@
+[173.499 us ; 178.605 us) | @@@@@@@@@@
+[178.605 us ; 184.055 us) | @@@@@
 ---------------------------------------------------
 
 |   Method |     Mean |   Error |  StdDev |
 |--------- |---------:|--------:|--------:|
-| RunQuery | 154.2 us | 3.00 us | 2.95 us |
+| RunQuery | 177.7 us | 2.78 us | 2.60 us |
 
-  #Legends
+  * Legends *
+  lastName   : Value of the 'lastName' parameter
+  publishers : Value of the 'publishers' parameter
   Mean       : Arithmetic mean of all measurements
   Error      : Half of 99.9% confidence interval
   StdDev     : Standard deviation of all measurements
