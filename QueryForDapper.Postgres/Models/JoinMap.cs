@@ -12,8 +12,8 @@ namespace QueryForDapper.Postgres.Models
     public class JoinMap
     {
 
-        public IDictionary<Type,string> ColumnsByTable { get; }
-        public Type JoinTable { get; }
+        private IDictionary<Type,string> ColumnsByTable { get; }
+        private Type JoinTable { get; }
 
 
         public JoinMap(Type leftTable, Type joinTable, Type rightTable, string leftColumn, string rightColumn)

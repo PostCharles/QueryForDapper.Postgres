@@ -28,7 +28,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaString_PassesValueToColumnNameMethod()
+        public void ToColumnNameByString_PassesValueToColumnNameMethod()
         {
             var column = "column";
 
@@ -39,7 +39,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaMemberInfo_PassesValueToColumnNameMethod()
+        public void ToColumnNameByMemberInfo_PassesValueToColumnNameMethod()
         {
             var tableType = typeof(Table);
             var member = tableType.GetProperty(nameof(Table.TableId));
@@ -51,7 +51,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaMemberInfo_HasColumnDefinition_ReturnsValueFromDefinition()
+        public void ToColumnNameByMemberInfo_HasColumnDefinition_ReturnsValueFromDefinition()
         {
             var definedColumn = "ColumnName";
             QueryConfiguration.Current.DefineColumnName<UsingType>(l => l.Declared, definedColumn);
@@ -66,7 +66,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaMemberInfo_HasColumnAttribute_ReturnsNameFromAttribute()
+        public void ToColumnNameByMemberInfo_HasColumnAttribute_ReturnsNameFromAttribute()
         {
             var tableType = typeof(AttributedType);
             var member = tableType.GetProperty(nameof(AttributedType.id));
@@ -79,7 +79,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaMemberInfo_HasColumnAttributeAndColumnDefinition_ReturnsNameFromDefinition()
+        public void ToColumnNameByMemberInfo_HasColumnAttributeAndColumnDefinition_ReturnsNameFromDefinition()
         {
             var definedColumn = "defined_column_name";
             QueryConfiguration.Current.DefineColumnName<AttributedType>(c => c.id, definedColumn);
@@ -93,7 +93,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaMemberInfo_ColumnFromGenericBaseType_ReturnsColumnNameFromAttributeOnDerivedType()
+        public void ToColumnNameByMemberInfo_ColumnFromGenericBaseType_ReturnsColumnNameFromAttributeOnDerivedType()
         {
             QueryConfiguration.Current.UseColumnAttributeNames();
            
@@ -106,7 +106,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToColumnNameViaMemberInfo_ColumnFromGenericBaseType_ReturnsColumnNameDefinedOnDerivedType()
+        public void ToColumnNameByMemberInfo_ColumnFromGenericBaseType_ReturnsColumnNameDefinedOnDerivedType()
         {
             var columnName = "TestColumnName";
             QueryConfiguration.Current.DefineColumnName<UsingType>(t => t.Declared, columnName);
@@ -120,7 +120,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToTableNameViaTable_PassesValueToTableNameMethod()
+        public void ToTableNameByTable_PassesValueToTableNameMethod()
         {
             var table = typeof(Left);
 
@@ -131,7 +131,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToTableNameViaType_HasTableDefinition_ReturnsValueFromDefinition()
+        public void ToTableNameByType_HasTableDefinition_ReturnsValueFromDefinition()
         {
             var definedTable = "TableName";
             QueryConfiguration.Current.DefineTableName<UsingType>(definedTable);
@@ -143,7 +143,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToTableNameViaType_HasTableAttribute_ReturnsNameFromAttribute()
+        public void ToTableNameByType_HasTableAttribute_ReturnsNameFromAttribute()
         {
             QueryConfiguration.Current.ShouldUseTableAttributes = true;
 
@@ -153,7 +153,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToTableNameViaType_HasTableAttributeAndTableDefinition_ReturnsNameFromDefinition()
+        public void ToTableNameByType_HasTableAttributeAndTableDefinition_ReturnsNameFromDefinition()
         {
             var definedTable = "defined_table_name";
             QueryConfiguration.Current.DefineTableName<AttributedType>(definedTable);
@@ -165,7 +165,7 @@ namespace Test
         }
 
         [Fact]
-        public void ToTableNameViaString_PassesValueToTableNameMethod()
+        public void ToTableNameByString_PassesValueToTableNameMethod()
         {
             var tableName = typeof(Left).Name;
 

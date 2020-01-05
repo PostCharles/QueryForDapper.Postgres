@@ -44,7 +44,7 @@ namespace QueryForDapper.Postgres.Models
 
             foreach (var select in query.Selects)
             {
-                result = $"{result} {select.Table}.{select.Column},";
+                result = $"{result} {select.Table}.{select.Column}{select.GetAsSqlPartial()},";
             }
 
             return $"{result.TrimEnd(',')} {FROM} {query.StartTable}";

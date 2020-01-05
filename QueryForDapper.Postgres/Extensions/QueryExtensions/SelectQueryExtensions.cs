@@ -52,5 +52,19 @@ namespace QueryForDapper.Postgres.Models
 
             return query;
         }
+
+        public static IQuery SelectAs<T>(this IQuery query, string column, string @as)
+        {
+            query.AddSelect(column, typeof(T), @as);
+
+            return query;
+        }
+
+        public static IQuery SelectAs<T>(this IQuery query, Expression<Func<T, object>> propertySelector, string @as)
+        {
+            query.AddSelect(propertySelector.Body.GetMemberInfo(), typeof(T), @as);
+
+            return query;
+        }
     }
 }

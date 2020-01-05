@@ -55,7 +55,7 @@ namespace QueryForDapper.Postgres.Models
         }
 
         public static QueryConfiguration ConfigureTo() { return QueryConfiguration.Current; }
-        public static Query FromTable<T>() { return new Query(typeof(T).Name); }
+        public static IQuery FromTable<T>() { return new Query(typeof(T).Name); }
 
 
 
@@ -94,13 +94,13 @@ namespace QueryForDapper.Postgres.Models
             _joins.Add(new Join(column.ToColumnName(table), table.ToTableName(), columnLeft.ToColumnName(tableLeft), tableLeft.ToTableName(), joinType));
         }
 
-        public void AddSelect(MemberInfo column, Type table)
+        public void AddSelect(MemberInfo column, Type table, string @as = null)
         {
-            _selects.Add(new Select(column.ToColumnName(table), table.ToTableName()));
+            _selects.Add(new Select(column.ToColumnName(table), table.ToTableName(), @as));
         }
-        public void AddSelect(string column, Type table)
+        public void AddSelect(string column, Type table, string @as = null)
         {
-            _selects.Add(new Select(column, table.ToTableName()));
+            _selects.Add(new Select(column, table.ToTableName(), @as));
         }
 
         public void AddWhere(MemberInfo column, Type table, string predicate, Operator @operator)
@@ -108,6 +108,11 @@ namespace QueryForDapper.Postgres.Models
             _wheres.Add(new Where(column.ToColumnName(table), table.ToTableName(), 
                                   @operator, 
                                   predicate));
+        }
+
+        public IQuery GetShallowClone()
+        {
+            return this.MemberwiseClone() as IQuery;
         }
 
     }

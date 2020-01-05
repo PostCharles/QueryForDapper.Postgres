@@ -24,10 +24,11 @@ namespace QueryForDapper.Postgres.Models
         void AddJoin(string column, Type table, string columnLeft, Type tableLeft, JoinType joinType);
         void AddJoin(MemberInfo column, Type table, MemberInfo columnLeft, Type tableLeft, JoinType joinType);
         void AddOrderBy(MemberInfo column, Type table, Order order);
-        void AddSelect(MemberInfo column, Type table);
-        void AddSelect(string column, Type table);
+        void AddSelect(MemberInfo column, Type table, string @as = null);
+        void AddSelect(string column, Type table, string @as = null);
         void AddWhere(MemberInfo column, Type table, string predicate, Operator @operator);
         void AddLimitParameter(string parameter);
         void AddOffsetParameter(string parameter);
+        IQuery GetShallowClone();
     }
 }

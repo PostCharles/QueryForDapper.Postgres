@@ -38,50 +38,72 @@ namespace Test.QueryTests
         {
             Query.Select<Table>();
 
-            _mock.Verify(m => m.AddSelect("*", typeof(Table)));
+            _mock.Verify(m => m.AddSelect("*", typeof(Table),null));
         }
 
         [Fact]
-        public void SelectViaString_CallsAddSelect()
+        public void SelectByString_CallsAddSelect()
         {
             var column = "left_id";
             Query.Select<Table>(column);
 
-            _mock.Verify(m => m.AddSelect(column, typeof(Table)));
+            _mock.Verify(m => m.AddSelect(column, typeof(Table),null));
         }
 
+
         [Fact]
-        public void SelectViaStringArray_CallsAddSelectForEachColumn()
+        public void SelectByStringArray_CallsAddSelectForEachColumn()
         {
             var idColumn = "left_id";
             var valueColumn = "value";
 
             Query.Select<Table>(idColumn, valueColumn);
 
-            _mock.Verify(m => m.AddSelect(idColumn, typeof(Table)));
-            _mock.Verify(m => m.AddSelect(valueColumn, typeof(Table)));
+            _mock.Verify(m => m.AddSelect(idColumn, typeof(Table),null));
+            _mock.Verify(m => m.AddSelect(valueColumn, typeof(Table),null));
         }
 
         [Fact]
-        public void SelectViaExpression_CallsAddSelect()
+        public void SelectByExpression_CallsAddSelect()
         {
             var member = typeof(Table).GetProperty(nameof(Table.TableId));
             
             Query.Select<Table>(l => l.TableId);
             
-            _mock.Verify(m => m.AddSelect(member, typeof(Table)));
+            _mock.Verify(m => m.AddSelect(member, typeof(Table),null));
         }
 
         [Fact]
-        public void SelectViaExpressionArray_CallsAddSelectForEachExpression()
+        public void SelectByExpressionArray_CallsAddSelectForEachExpression()
         {
             var leftMember = typeof(Join).GetProperty(nameof(Join.LeftId));
             var rightMember = typeof(Join).GetProperty(nameof(Join.RightId));
 
             Query.Select<Join>(j => j.LeftId, j => j.RightId);
 
-            _mock.Verify(m => m.AddSelect(leftMember, typeof(Join)));
-            _mock.Verify(m => m.AddSelect(rightMember, typeof(Join)));
+            _mock.Verify(m => m.AddSelect(leftMember, typeof(Join),null));
+            _mock.Verify(m => m.AddSelect(rightMember, typeof(Join),null));
+        }
+
+
+        [Fact]
+        public void SelectAsByString_CallsAddSelect()
+        {
+            var column = "table_id";
+            var @as = "TABLE_ID";
+            Query.SelectAs<Table>(column, @as);
+
+            _mock.Verify(m => m.AddSelect(column, typeof(Table), @as));
+        }
+
+        [Fact]
+        public void SelectAsByExpression_CallsAddSelect()
+        {
+            var member = typeof(Table).GetProperty(nameof(Table.TableId));
+            var @as = "TABLE_ID";
+            Query.SelectAs<Table>(l => l.TableId, @as);
+
+            _mock.Verify(m => m.AddSelect(member, typeof(Table), @as));
         }
     }
 }

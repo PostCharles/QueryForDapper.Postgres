@@ -64,12 +64,14 @@ namespace Test.QueryTests
         [Fact]
         public void BuildSelect_QueryHasMultipleSelects_ConcatsSelects()
         {
+            var @as = "TABLE_ID";
             var query = Query.FromTable<Left>()
                              .Select<Left>(l => l.LeftId)
                              .Select<Right>(r => r.RightId)
+                             .SelectAs<Table>(t => t.TableId, @as)
                              .Select<Join>(j => j.JoinId);
 
-            Assert.Equal($"SELECT {nameof(Left)}.{nameof(Left.LeftId)}, {nameof(Right)}.{nameof(Right.RightId)}, {nameof(Join)}.{nameof(Join.JoinId)} FROM {nameof(Left)}",
+            Assert.Equal($"SELECT {nameof(Left)}.{nameof(Left.LeftId)}, {nameof(Right)}.{nameof(Right.RightId)}, {nameof(Table)}.{nameof(Table.TableId)} AS {@as}, {nameof(Join)}.{nameof(Join.JoinId)} FROM {nameof(Left)}",
                          BuildSelect(query));
         }
 

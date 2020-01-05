@@ -105,7 +105,7 @@ namespace Test.QueryConfigurationTests
         }
 
         [Fact]
-        public void MapManyToManyViaExpression_NameMethodsNotSet_ThrowsConfigurationOrderException()
+        public void MapManyToManyByExpression_NameMethodsNotSet_ThrowsConfigurationOrderException()
         {
             var exception = Assert.Throws<ConfigurationOrderException>(() => QueryConfiguration.Current.MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId));
 
@@ -114,21 +114,21 @@ namespace Test.QueryConfigurationTests
         }
 
         [Fact]
-        public void MapManyToManyViaExpression_AddsMapToJoinMaps()
+        public void MapManyToManyByExpression_AddsMapToJoinMaps()
         {
             QueryConfiguration.Current.UsePassthroughNaming()
                                       .MapManyToMany<Left, Join, Right>(j => j.LeftId, j => j.RightId);
 
             var map = QueryConfiguration.Current.JoinMaps.Single();
 
-            Assert.Equal(typeof(Join), map.JoinTable);
-            Assert.True(map.ColumnsByTable[typeof(Left)] == nameof(Join.LeftId));
-            Assert.True(map.ColumnsByTable[typeof(Right)] == nameof(Join.RightId));
+            Assert.Equal(nameof(Join.LeftId), map.GetRight(typeof(Left)).Column);
+            Assert.Equal(nameof(Join.RightId), map.GetRight(typeof(Right)).Column);
+            Assert.Equal(typeof(Join), map.GetLeft(typeof(Left)).Table);
 
         }
 
         [Fact]
-        public void MapManyToManyViaExpression_PassesKeysToColumnNameMetod()
+        public void MapManyToManyByExpression_PassesKeysToColumnNameMetod()
         {
             var renamedColumns = new List<string>();
             QueryConfiguration.Current.NameColumnsWith(s => { renamedColumns.Add(s); return s; })
@@ -139,7 +139,7 @@ namespace Test.QueryConfigurationTests
         }
 
         [Fact]
-        public void MapManyToManyViaString_AddsMapToJoinMaps()
+        public void MapManyToManyByString_AddsMapToJoinMaps()
         {
             var leftKey = "leftKeyString";
             var rightKey = "rightKeyString";
@@ -147,13 +147,13 @@ namespace Test.QueryConfigurationTests
 
             var map = QueryConfiguration.Current.JoinMaps.Single();
 
-            Assert.True(map.ColumnsByTable[typeof(Left)] == leftKey);
-            Assert.True(map.ColumnsByTable[typeof(Right)] == rightKey);
-            Assert.Equal(typeof(Join), map.JoinTable);
+            Assert.Equal(leftKey, map.GetRight(typeof(Left)).Column);
+            Assert.Equal(rightKey, map.GetRight(typeof(Right)).Column);
+            Assert.Equal(typeof(Join), map.GetLeft(typeof(Left)).Table);
         }
 
         [Fact]
-        public void MapManyToManyViaString_DoesNotPassKeysToColumnNameMethod()
+        public void MapManyToManyByString_DoesNotPassKeysToColumnNameMethod()
         {
             int callCount = 0;
             QueryConfiguration.Current.NameColumnsWith(s => { callCount++; return s; }).MapManyToMany<Left, Join, Right>("", "");

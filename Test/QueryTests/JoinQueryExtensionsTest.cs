@@ -36,7 +36,7 @@ namespace Test.QueryTests
         }
 
         [Fact]
-        public void JoinOnViaString_PassesValuesToAddJoin()
+        public void JoinOnByString_PassesValuesToAddJoin()
         {
             var column = "column";
             var joinType = JoinType.Inner;
@@ -48,7 +48,7 @@ namespace Test.QueryTests
         }
 
         [Fact]
-        public void JoinOnViaExpression_PassesValuesToAddJoin()
+        public void JoinOnByExpression_PassesValuesToAddJoin()
         {
             var table = typeof(Table);
             var member = ((Expression<Func<Table, object>>)((Table u) => u.TableId)).GetMemberInfo();
@@ -60,7 +60,7 @@ namespace Test.QueryTests
         }
 
         [Fact]
-        public void JoinOnLeftRightViaString_PassesValuesToAddJoin()
+        public void JoinOnLeftRightByString_PassesValuesToAddJoin()
         {
             var left = "Left";
             var right = "Right";
@@ -70,7 +70,7 @@ namespace Test.QueryTests
         }
 
         [Fact]
-        public void JoinOnLeftRightViaExpression_PassesValuesToAddJoin()
+        public void JoinOnLeftRightByExpression_PassesValuesToAddJoin()
         {
             var left = typeof(Left).GetProperty(nameof(Left.LeftId));
             var right = typeof(Right).GetProperty(nameof(Right.RightId));

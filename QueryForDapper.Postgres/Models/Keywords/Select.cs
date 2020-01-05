@@ -11,11 +11,18 @@ namespace QueryForDapper.Postgres.Models.Keywords
     {
         public string Column { get;}
         public string Table { get; }
+        public string As { get; }
 
-        public Select(string column, string table) 
+        public Select(string column, string table, string @as) 
         {
             Column = column;
             Table = table;
+            As = @as;
+        }
+
+        public string GetAsSqlPartial()
+        {
+            return (As is null) ? string.Empty : $" AS {As}";
         }
     }
 }
