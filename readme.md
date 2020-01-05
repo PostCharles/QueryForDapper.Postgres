@@ -100,6 +100,8 @@ If no select method as been called the resulting statement will have a `SELECT *
 |`Select<Table>(t => t.TableId)` | `SELECT Table.TableId FROM`|
 |`Select<Table>("stringId", "stringName")` | `SELECT Table.stringId, Table.stringName FROM`|
 |`Select<Table>(t => t.TableId, t => t.Name)` | `SELECT Table.TableId, Table.Name FROM`|
+|`SelectAs<Table>("stringId", "asName")` | `SELECT Table.stringId AS asName FROM`|
+|`SelectAs<Table>(t => t.TableId, "asName")` | `SELECT Table.TableId AS asName FROM`|
 
 ##### Example
 
