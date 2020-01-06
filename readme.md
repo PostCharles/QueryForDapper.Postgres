@@ -170,11 +170,10 @@ LEFT OUTER JOIN LeftTable USING (LeftId)
 ## Where
 
 ### Operators
-All where extensions methods have an operator parameter. `Operator @operator = default`. Default is none.
+All where extensions methods have an operator parameter. `Operator @operator = default`. Default is `AND`.
 
 | Operator | Result|
 |------------------|-------|
-| `Operator.None` | BLANK |
 | `Operator.And` | `AND` |
 | `Operator.Or` | `OR` |
 | `Operator.Not` | `NOT` |
@@ -322,6 +321,35 @@ result
 SELECT * FROM Books
 LIMIT @skip
 ```
+# Caching
+Caching is performed by the `ConcurrentQueryCacheService` which implements `IQueryCacheService`.
+
+| Method | Description |
+|------------------|-------------|
+| `AddIfNew(string id, Func<IQuery> query)` | Will add query defined in func if the id is not found |
+| `AddIfNew<T>(string id, Func<IQuery> query)` | Will add query defined in func if the id for type is not found |
+| `IQuery GetQuery(string id)` | Will return a shallow clone of the cached query by id |
+| `IQuery GetQuery<T>(string id)` | Will return a shallow clone of the cached query by id and type |
+| `string GetStatement(string id`) | Will return the cached SQL statement by id |
+| `string GetStatement<T>(string id`) | Will return the cached SQL statement by id and type|
+
+Note: An exception of type `CachedQueryNotFound` will be thrown if no query has been cached for id or combination of id and type when using Get methods.
+
+Example:
+```csharp
+    _queryCache.AddIfNew("QueryId",() => Query.FromTable<Books>
+                                              .WhereComparedWith<Book>(b => b.Author, () => requestedAuthor)
+					      .Select<Book>(b => b.Title);
+					 
+   var statement = _queryCache.GetStatement("QueryId");
+```
+#### Note 
+For caching to be effective the query must be defined inside the `Func<IQuery>`.
+
+#### Note
+Caching is most effective with large queries.
+
+
 # Performance
 ### Benchmark Method
 ```csharp
