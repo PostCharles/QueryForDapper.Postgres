@@ -51,6 +51,17 @@ namespace Test
         }
 
         [Fact]
+        public void ToColumnNameByMemberInfo_AddsGeneratedNameToColumnDefintion()
+        {
+            var tableType = typeof(Table);
+            var member = tableType.GetProperty(nameof(Table.TableId));
+
+            var result = member.ToColumnName(tableType);
+
+            Assert.Single(QueryConfiguration.Current.ColumnDefinitions.Where(c => c.IsMatch(member.Name, tableType)));
+        }
+
+        [Fact]
         public void ToColumnNameByMemberInfo_HasColumnDefinition_ReturnsValueFromDefinition()
         {
             var definedColumn = "ColumnName";
@@ -128,6 +139,16 @@ namespace Test
 
             Assert.Single(PassedTableNames.Where(c => c == table.Name));
             Assert.Equal($"{table.Name}{SUFFIX}", result);
+        }
+
+        [Fact]
+        public void ToTableNameByTable_AddsGeneratedTableNameToTableDefinitions()
+        {
+            var table = typeof(Left);
+
+            var result = table.ToTableName();
+
+            Assert.Single(QueryConfiguration.Current.TableDefinitions.Where(t => t.Key == table));
         }
 
         [Fact]
