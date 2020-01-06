@@ -15,7 +15,6 @@ namespace Test
     public class EnumExtensionsTest
     {
         [Theory]
-        [InlineData(Operator.None, "")]
         [InlineData(Operator.Not, "NOT")]
         [InlineData(Case.Sensitive, "LIKE")]
         [InlineData(JoinType.FullOuter, "FULL OUTER")]

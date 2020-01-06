@@ -9,10 +9,8 @@ namespace QueryForDapper.Postgres.Enums
 {
     public enum Operator
     {
-        [SqlPartial("")]
-        None = 0,
         [SqlPartial("AND")]
-        And,
+        And = 0,
         [SqlPartial("OR")]
         Or,
         [SqlPartial("NOT")]

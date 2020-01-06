@@ -68,14 +68,16 @@ namespace QueryForDapper.Postgres.Models
         {
             if (query.Wheres.Count == 0) return sql;
 
-            sql = $"{sql} {WHERE}";
+            var first = query.Wheres.First();
+            
+            sql = $"{sql} {WHERE} {first.Table}.{first.Column} {first.Predicate}";
 
-            foreach (var where in query.Wheres)
+            foreach (var where in query.Wheres.Skip(1))
             {
                 sql = $"{sql} {where.Operator} {where.Table}.{where.Column} {where.Predicate}";
             }
 
-            return Regex.Replace(sql, @"\s+", " ");
+            return sql;
         }
 
         public static string AppendOrderBys(IQuery query, string sql)

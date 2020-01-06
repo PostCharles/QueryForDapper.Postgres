@@ -43,7 +43,7 @@ namespace Test.QueryTests
             Query.WhereComparedWith<Table>(t => t.TableId, () => parameter, comparison: Comparison.NotEqual);
 
             var expectedPredicate = $"<> @{nameof(parameter)}";
-            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.And));
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Test.QueryTests
             Query.WhereCompared<Table>(t => t.TableId, value, comparison: Comparison.GreaterThanEqual);
 
             var expectedPredicate = $">= '{value}'";
-            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.And));
         }
 
         [Fact]
@@ -64,11 +64,11 @@ namespace Test.QueryTests
             var testParam = "";
             var column = typeof(Table).GetProperty(nameof(Table.TableId));
 
-            Query.WhereAnyWith<Table>(t => t.TableId, () => testParam, Operator.None);
+            Query.WhereAnyWith<Table>(t => t.TableId, () => testParam, Operator.And);
             
             var expectedPredicate = $"= ANY( @{nameof(testParam)} )";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.And));
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace Test.QueryTests
             
             var expectedPredicate = $"ILIKE '%' || '{likeTerm}' || '%'";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.And));
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace Test.QueryTests
             
             var expectedPredicate = $"LIKE @{nameof(parameter)} || '%'";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.And));
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace Test.QueryTests
 
             var expectedPredicate = $"IN ({subQuery.ToStatement()})";
 
-            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.None));
+            _mock.Verify(m => m.AddWhere(column, typeof(Table), expectedPredicate, Operator.And));
         }
 
     }
